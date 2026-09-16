@@ -1,0 +1,29 @@
+{
+  "n_evaluated": 110,
+  "champion_test_obj": 0.9348070032744754,
+  "wf_pick": {
+    "flags": {
+      "lookbacks": [
+        231
+      ],
+      "top_n": 2,
+      "rotation_weight_scheme": "invvol",
+      "rotation_rank_metric": "mom",
+      "rotation_vol_target": 0.1,
+      "rotation_vol_window": 20,
+      "rotation_factor_window": 63,
+      "rotation_defensive_symbol": "GLD+TLT",
+      "rotation_cluster_filter": false,
+      "rotation_trend_filter": false,
+      "rotation_momentum_weight": true
+    },
+    "test": {
+      "cagr": 0.1395540257685015,
+      "mdd": -0.22473822114516373,
+      "sharpe": 0.8916164507573713
+    },
+    "test_obj": 0.8776617373562398
+  },
+  "best_test_obj": 1.031197546016415,
+  "beats_champion_oos": false
+}

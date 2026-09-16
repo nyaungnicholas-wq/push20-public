@@ -1,0 +1,18 @@
+# Credentials. This repo exists because .env was committed to the previous one.
+.env
+.env.*
+!.env.example
+
+# Live account + machine state. Never publish an order id or an equity figure.
+data/
+logs/
+*.log
+pending_orders.json
+slippage_log.jsonl
+rotation_state.json
+
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.DS_Store

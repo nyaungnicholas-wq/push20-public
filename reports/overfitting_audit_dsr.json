@@ -1,0 +1,42 @@
+{
+  "champion": "vw8_pc0.60_vc1.50_tn3",
+  "champion_sharpe_annual": 0.8332088058956416,
+  "years_of_data": 20.42063492063492,
+  "search_counts": {
+    "risk_dial_sweep": 1260,
+    "joint_search": 110,
+    "opt:variants": 16
+  },
+  "total_documented_trials": 1386,
+  "var_sharpe_annual_real": 0.0016491275957420007,
+  "rows": [
+    {
+      "n_trials": 135,
+      "var_source": "my grid",
+      "sr_star_annual": 0.07668703072637967,
+      "dsr": 0.9996241378817076,
+      "min_backtest_years": 9.997010487234988
+    },
+    {
+      "n_trials": 1260,
+      "var_source": "real 1260",
+      "sr_star_annual": 0.13483461448488349,
+      "dsr": 0.9990676039721814,
+      "min_backtest_years": 15.879646638869714
+    },
+    {
+      "n_trials": 6,
+      "var_source": "real 1260",
+      "sr_star_annual": 0.05279800498131601,
+      "dsr": 0.9997459031083454,
+      "min_backtest_years": 2.434854778809843
+    },
+    {
+      "n_trials": 1386,
+      "var_source": "real 1260",
+      "sr_star_annual": 0.13591266475216138,
+      "dsr": 0.999052327142899,
+      "min_backtest_years": 16.13458849957037
+    }
+  ]
+}

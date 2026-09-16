@@ -1,0 +1,23 @@
+{
+  "strategy": {
+    "starting_cash": 100000.0,
+    "final_equity": 274743.66246453347,
+    "total_return": 1.7474366246453346,
+    "cagr": 0.15550404669510476,
+    "sharpe": 0.7785403887284459,
+    "sortino": 0.7151504976662059,
+    "calmar": 0.5101277917392119,
+    "max_drawdown": -0.30483351272616355,
+    "num_trades": 936,
+    "num_closed": 492,
+    "win_rate": 0.7845528455284553,
+    "profit_factor": 3.308343452942443,
+    "avg_rr_achieved": 0.9085088238650232
+  },
+  "spy_benchmark": {
+    "final_equity": 245097.97243690715,
+    "cagr": 0.13678896236604476,
+    "max_drawdown": -0.3371727136342999,
+    "total_return": 1.4509797243690716
+  }
+}

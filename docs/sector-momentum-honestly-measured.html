@@ -1,0 +1,524 @@
+<title>Sector Momentum, Honestly Measured</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --ground:#FCFCFB;
+  --panel:#FFFFFF;
+  --panel-2:#F1F1EE;
+  --ink:#121417;
+  --ink-2:#4A4F55;
+  --ink-3:#7C828A;
+  --rule:#DEDEDA;
+  --rule-2:#BFC0BB;
+  --accent:#2B5FA8;
+  --accent-soft:#E4EBF7;
+  --pos:#2B5FA8;
+  --neg:#B04A34;
+  --good:#1F6B4A;
+  --warn:#8A5D0B;
+  --warn-soft:#F8EFD8;
+  --crit:#A33028;
+  --crit-soft:#F8E4E0;
+  --chart-surface:#FCFCFB;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#121211;
+    --panel:#1A1A19;
+    --panel-2:#232322;
+    --ink:#E9E9E4;
+    --ink-2:#AEAEA7;
+    --ink-3:#7E7E78;
+    --rule:#2C2C2A;
+    --rule-2:#414140;
+    --accent:#7FA3E0;
+    --accent-soft:#1B2536;
+    --pos:#5C8FD6;
+    --neg:#CE7156;
+    --good:#5FB98C;
+    --warn:#D3A241;
+    --warn-soft:#332912;
+    --crit:#DE7B6D;
+    --crit-soft:#331C18;
+    --chart-surface:#1A1A19;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#121211; --panel:#1A1A19; --panel-2:#232322;
+  --ink:#E9E9E4; --ink-2:#AEAEA7; --ink-3:#7E7E78;
+  --rule:#2C2C2A; --rule-2:#414140;
+  --accent:#7FA3E0; --accent-soft:#1B2536;
+  --pos:#5C8FD6; --neg:#CE7156;
+  --good:#5FB98C; --warn:#D3A241; --warn-soft:#332912;
+  --crit:#DE7B6D; --crit-soft:#331C18;
+  --chart-surface:#1A1A19;
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--ground); color:var(--ink);
+  font-family:"Source Serif 4",Georgia,serif;
+  font-size:17px; line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1060px;margin:0 auto;padding:40px 24px 100px}
+.measure{max-width:66ch}
+
+/* masthead */
+.mast{border-bottom:1px solid var(--rule-2);padding-bottom:26px}
+.eyebrow{
+  font-family:"IBM Plex Sans",system-ui,sans-serif;
+  font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-3);font-weight:500;
+}
+h1{
+  font-weight:600;font-size:clamp(32px,5vw,48px);line-height:1.06;
+  letter-spacing:-.018em;margin:10px 0 0;text-wrap:balance;max-width:20ch;
+}
+.deck{font-size:19px;color:var(--ink-2);margin:16px 0 0;max-width:62ch}
+.byline{
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--ink-3);
+  margin-top:20px;line-height:1.9;
+}
+
+/* headline numbers */
+.strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));
+  border:1px solid var(--rule);background:var(--panel);margin:30px 0 0;border-radius:2px;overflow:hidden}
+.strip>div{padding:14px 16px;border-right:1px solid var(--rule)}
+.strip>div:last-child{border-right:0}
+.strip dt{font-family:"IBM Plex Sans",sans-serif;font-size:10.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-3);margin:0;font-weight:500}
+.strip dd{margin:4px 0 0;font-family:"IBM Plex Mono",monospace;font-size:21px;
+  font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.strip dd small{font-size:12px;font-weight:400;color:var(--ink-3)}
+
+section{margin-top:56px}
+h2{font-weight:600;font-size:27px;letter-spacing:-.012em;margin:0 0 6px;
+  padding-bottom:10px;border-bottom:1px solid var(--rule-2);text-wrap:balance}
+h3{font-family:"IBM Plex Sans",sans-serif;font-size:12.5px;font-weight:600;
+  text-transform:uppercase;letter-spacing:.1em;color:var(--ink-2);margin:34px 0 10px}
+p{margin:15px 0;max-width:66ch}
+strong{font-weight:600}
+code,.mono{font-family:"IBM Plex Mono",monospace;font-size:.85em}
+code{background:var(--panel-2);padding:1px 5px;border-radius:2px}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* math */
+.eq{background:var(--panel);border:1px solid var(--rule);border-left:2px solid var(--accent);
+  padding:18px 22px;margin:22px 0;border-radius:0 2px 2px 0;overflow-x:auto}
+.eq .m{font-family:"IBM Plex Mono",monospace;font-size:15px;color:var(--ink);
+  display:flex;align-items:center;gap:.5em;flex-wrap:wrap;line-height:2}
+.eqnote{font-size:14px;color:var(--ink-2);margin:12px 0 0;max-width:62ch;
+  font-family:"Source Serif 4",Georgia,serif}
+.frac{display:inline-flex;flex-direction:column;text-align:center;vertical-align:middle;
+  margin:0 .3em;font-size:.92em}
+.frac .num{padding:0 .5em 2px;border-bottom:1px solid currentColor}
+.frac .den{padding:3px .5em 0}
+.eq var{font-style:italic;font-family:"Source Serif 4",serif;font-size:1.06em}
+.eq sub{font-size:.72em;font-style:normal;font-family:"IBM Plex Mono",monospace}
+
+/* tables */
+.tw{overflow-x:auto;margin:18px 0;border:1px solid var(--rule);border-radius:2px;background:var(--panel)}
+table{border-collapse:collapse;width:100%;font-family:"IBM Plex Sans",sans-serif;
+  font-size:13.5px;min-width:480px}
+th,td{padding:9px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+thead th{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--ink-3);font-weight:500;background:var(--panel-2);white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+td.v,th.v{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;
+  text-align:right;white-space:nowrap}
+td.k{font-family:"IBM Plex Mono",monospace;white-space:nowrap}
+tr.hi td{background:var(--accent-soft)}
+caption{caption-side:top;text-align:left;padding:11px 14px;font-family:"IBM Plex Mono",monospace;
+  font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);
+  border-bottom:1px solid var(--rule);background:var(--panel-2)}
+
+/* callouts */
+.note{border-left:2px solid var(--rule-2);background:var(--panel);padding:16px 20px;
+  margin:24px 0;border-radius:0 2px 2px 0}
+.note.warn{border-left-color:var(--warn);background:var(--warn-soft)}
+.note.crit{border-left-color:var(--crit);background:var(--crit-soft)}
+.note .lbl{font-family:"IBM Plex Sans",sans-serif;font-size:11px;letter-spacing:.1em;
+  text-transform:uppercase;font-weight:600;display:block;margin-bottom:8px;color:var(--ink-3)}
+.note.warn .lbl{color:var(--warn)}
+.note.crit .lbl{color:var(--crit)}
+.note p{margin:0;font-size:16px;max-width:62ch}
+.note p+p{margin-top:12px}
+
+/* chart */
+.figure{margin:26px 0;border:1px solid var(--rule);border-radius:2px;background:var(--chart-surface);overflow:hidden}
+.figure .fhead{padding:14px 18px;border-bottom:1px solid var(--rule);background:var(--panel-2)}
+.figure .ftitle{font-family:"IBM Plex Sans",sans-serif;font-size:14px;font-weight:600}
+.figure .fsub{font-family:"IBM Plex Sans",sans-serif;font-size:12.5px;color:var(--ink-2);margin-top:3px}
+.legend{display:flex;gap:18px;flex-wrap:wrap;padding:11px 18px;border-bottom:1px solid var(--rule);
+  font-family:"IBM Plex Sans",sans-serif;font-size:12px;color:var(--ink-2)}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.swatch{width:11px;height:11px;border-radius:2px;display:inline-block}
+.rows{padding:14px 18px 18px}
+.row{display:grid;grid-template-columns:44px 1fr 62px;align-items:center;gap:10px;
+  height:22px;position:relative}
+.row .yr{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--ink-2);
+  font-variant-numeric:tabular-nums}
+.row .val{font-family:"IBM Plex Mono",monospace;font-size:11.5px;text-align:right;
+  font-variant-numeric:tabular-nums;color:var(--ink-2)}
+.track{position:relative;height:100%}
+.zero{position:absolute;top:-2px;bottom:-2px;width:1px;background:var(--rule-2)}
+.bar{position:absolute;top:5px;height:11px;border-radius:2px}
+.row:hover .bar{filter:brightness(1.12)}
+.row:hover{background:var(--panel-2)}
+.axis{display:grid;grid-template-columns:44px 1fr 62px;gap:10px;padding:6px 18px 14px;
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-3)}
+.axis .ticks{position:relative;height:14px}
+.axis .ticks span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.tip{position:fixed;pointer-events:none;opacity:0;transition:opacity .09s;
+  background:var(--ink);color:var(--ground);font-family:"IBM Plex Sans",sans-serif;
+  font-size:12px;padding:7px 10px;border-radius:3px;z-index:50;line-height:1.5;white-space:nowrap}
+.tip b{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
+
+footer{margin-top:70px;padding-top:20px;border-top:1px solid var(--rule);
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--ink-3);line-height:1.95}
+@media (max-width:620px){
+  body{font-size:16px}
+  .row,.axis{grid-template-columns:36px 1fr 54px}
+}
+</style>
+
+<div class="wrap">
+
+<header class="mast">
+  <div class="eyebrow">Research note · 2026-09-15</div>
+  <h1>Sector Momentum, Honestly Measured</h1>
+  <p class="deck">A twenty-year sector-rotation strategy, its one sealed out-of-sample test, the twelve improvements that failed, and why the overfitting statistic everyone quotes needs an error bar nobody publishes.</p>
+  <div class="byline">
+    Strategy: PUSH-20 · 10 US sector ETFs · daily cadence · 2&times; leverage ceiling 1.25&times;<br>
+    Window: 2006-01-01 → 2026-09-02 · costs charged at 9.5&nbsp;bps per side<br>
+    All figures reproducible from source; commands at the end.
+  </div>
+</header>
+
+<dl class="strip">
+  <div><dt>CAGR</dt><dd>18.52<small>%</small></dd></div>
+  <div><dt>Backtest MDD</dt><dd>&minus;28.4<small>%</small></dd></div>
+  <div><dt>Modelled MDD</dt><dd>&lt;&minus;40<small>% · p=.63</small></dd></div>
+  <div><dt>Sharpe</dt><dd>0.892</dd></div>
+  <div><dt>Calmar</dt><dd>0.653</dd></div>
+  <div><dt>Live record</dt><dd>0<small> days</small></dd></div>
+</dl>
+
+<section>
+  <h2>What this is, and what it is not</h2>
+  <p class="measure">This is a cross-sectional momentum strategy on ten US sector ETFs with a volatility-targeted leverage overlay. It is not novel. Dual-momentum sector rotation is one of the most replicated anomalies in the literature, and the version here differs from the textbook only in its cadence, its signal smoothing, and in replacing the usual binary risk-off switch with continuous volatility targeting.</p>
+  <p class="measure">What is unusual is the evidence discipline around it: a pre-registered sealed holdout with the pass criteria fixed in a hashed file before the run, selection on the median of a perturbation set rather than an argmax, a regression proving the backtest executes the same rules as the live system, and a written record of the one time the window had to be graded twice and why.</p>
+  <p class="measure">The honest summary is that the <em>family</em> edge is well supported and the <em>specific configuration</em> is not distinguishable from its neighbours — and, as Section 5 shows, the standard statistic for making that second claim is far noisier than its usual presentation admits.</p>
+  <div class="note crit">
+    <span class="lbl">Read this before the numbers</span>
+    <p>The configuration described here has <strong>never placed a live order</strong>. It was selected on 2026-09-13 and its first trade is scheduled for 2026-09-16. The account it will trade is a paper account that is down 2.9% since 2026-06-10 while SPY gained 3.1% — a sample far too short to support any claim in either direction. Everything below is a backtest, and one sealed test of it.</p>
+  </div>
+</section>
+
+<section>
+  <h2>1 · The strategy</h2>
+  <p class="measure">Ten sector ETFs form the ranked universe: XLK, QQQ, SMH, XLF, XLE, XLV, XLI, XLY, XLB, XLC. SPY and the VIX enter the calculation without ever being ranked; gold and long Treasuries hold whatever capital the equity sleeve does not use.</p>
+
+  <h3>Signal</h3>
+  <p class="measure">Each sector is scored by its 232-trading-day total return, smoothed with a nine-day exponential moving average. The smoothing is not decoration — it is what makes a daily cadence viable at all, and Section 4 shows what happens without it.</p>
+  <div class="eq">
+    <div class="m">
+      <var>m</var><sub>i,t</sub> &nbsp;=&nbsp; EMA<sub>9</sub><span style="margin-left:.15em">(</span>
+      <span class="frac"><span class="num"><var>P</var><sub>i,t</sub></span><span class="den"><var>P</var><sub>i,t&minus;232</sub></span></span>
+      &minus; 1<span>)</span>
+    </div>
+    <p class="eqnote">
+      Sectors with <var>m</var> &le; 0 are dropped entirely; the top three of what remains are held at equal weight. If fewer than three qualify, the empty slots go to the defensive sleeve.</p>
+  </div>
+
+  <h3>Exposure</h3>
+  <p class="measure">This is the engine, and the only part where notation is clearer than prose. Exposure is a volatility target, clipped by a floor and by whichever risk ceiling currently binds. Every ceiling is a minimum, so exposure can only ever be reduced from the raw target.</p>
+  <div class="eq">
+    <div class="m">
+      <var>s</var><sub>t</sub> &nbsp;=&nbsp; clip<span>(</span>
+      <span class="frac"><span class="num">&sigma;<sub>target</sub></span><span class="den">&sigma;<sub>basket,t</sub></span></span>
+      ,&nbsp; <var>f</var>,&nbsp; min<span>(</span><var>c</var><sub>regime</sub>, <var>c</var><sub>VIX</sub><span>)</span><span>)</span>
+    </div>
+    <p class="eqnote">&sigma;<sub>basket</sub> is the annualised realised volatility of the equal-weight basket of the <em>held picks</em> over eight days — not of SPY. A 2&times; semiconductor sleeve runs three to four times SPY's volatility, so sizing against the index systematically under-prices it. Getting this wrong is worth about 0.04pp of CAGR and three months of believing a risk control was active when it was not.</p>
+  </div>
+
+  <h3>Vehicle</h3>
+  <p class="measure">When the scale exceeds one and a 2&times; fund exists for that sector, the position is taken in the leveraged fund with half the dollars. This identity is the single most commonly misread part of levered-ETF strategies: the book is not 125% invested, it is roughly 62% invested in instruments that move twice as fast.</p>
+  <div class="eq">
+    <div class="m">
+      capital<sub>i</sub> &nbsp;=&nbsp;
+      <span class="frac"><span class="num"><var>w</var><sub>i</sub> &middot; <var>s</var><sub>t</sub> &middot; <var>E</var><sub>t</sub></span><span class="den"><var>L</var></span></span>
+      &nbsp;<span style="color:var(--ink-3)">for an <var>L</var>&times; fund</span>
+    </div>
+    <p class="eqnote">Unused capital goes to GLD and TLT in equal parts, always unlevered. Under leverage that sleeve is most of the book by dollars while carrying a minority of the risk.</p>
+  </div>
+
+  <h3>Parameters</h3>
+  <div class="tw"><table>
+    <caption>The shipped configuration</caption>
+    <thead><tr><th>Parameter</th><th class="v">Value</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td class="k">lookback</td><td class="v">232 d</td><td>≈ 11 months</td></tr>
+      <tr><td class="k">ema_span</td><td class="v">9</td><td>signal smoothing</td></tr>
+      <tr><td class="k">top_n</td><td class="v">3</td><td>equal weight</td></tr>
+      <tr><td class="k">min_hold_days</td><td class="v">3</td><td>turnover brake</td></tr>
+      <tr><td class="k">vol_target</td><td class="v">0.50</td><td>against basket vol, not SPY</td></tr>
+      <tr><td class="k">vol_window</td><td class="v">8 d</td><td>realised vol lookback</td></tr>
+      <tr><td class="k">vol_cap / bear</td><td class="v">1.25 / 1.00</td><td>SPY 200-SMA sets the regime</td></tr>
+      <tr><td class="k">vol_floor</td><td class="v">0.50</td><td>never below half-invested</td></tr>
+      <tr><td class="k">vix_gate</td><td class="v">25 → 1.0&times;</td><td>single tier; see Section 4</td></tr>
+      <tr><td class="k">defensive</td><td class="v">GLD + TLT</td><td>leftover capital, unlevered</td></tr>
+      <tr><td class="k">cost_bps</td><td class="v">9.5</td><td>per side; see Section 6</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2>2 · Twenty-one years, one year at a time</h2>
+  <p class="measure">Aggregate statistics hide whether an edge is broad or the residue of one extraordinary year. It is broad: the strategy beats SPY in <strong>15 of 21 years</strong> with a median annual excess of <strong>+5.0 percentage points</strong>, and it survives both bear markets in the sample. Removing 2020 — by far the best year — leaves the conclusion unchanged.</p>
+
+  <div class="figure">
+    <div class="fhead">
+      <div class="ftitle">Annual return versus SPY, 2006–2026</div>
+      <div class="fsub">Percentage points of excess return. 2026 is partial, through 2 September.</div>
+    </div>
+    <div class="legend">
+      <span><i class="swatch" style="background:var(--pos)"></i> Beat SPY &mdash; 15 years</span>
+      <span><i class="swatch" style="background:var(--neg)"></i> Lagged SPY &mdash; 6 years</span>
+    </div>
+    <div class="rows" id="rows"></div>
+    <div class="axis"><span></span><div class="ticks" id="ticks"></div><span></span></div>
+  </div>
+
+  <p class="measure">The two bear markets are the load-bearing observations. In <strong>2008</strong> the strategy returned +5.5% while SPY lost 36.2%; in <strong>2022</strong> it lost 13.7% against SPY's 18.6%. A momentum strategy that merely rode the 2010s would not have done either. The six losing years are mostly sharp V-shaped reversals — 2009 and 2020's recovery leg are exactly where cross-sectional momentum is known to be weakest, because yesterday's losers become tomorrow's leaders faster than any trailing signal can follow.</p>
+</section>
+
+<section>
+  <h2>3 · The sealed test</h2>
+  <p class="measure">Three changes to a previously deployed configuration were selected using 2006–2018 only: retire the upper VIX de-leverage tier, weight the three holdings equally rather than in proportion to momentum, and lower the leverage ceiling from 1.5&times; to 1.25&times;.</p>
+  <p class="measure">Selection scored the <strong>median across thirteen perturbations</strong> of the configuration rather than any single point, because the audit in Section 5 shows single-point results on this grid are close to meaningless. Pass criteria were written into a file and hashed before the holdout was opened.</p>
+
+  <div class="tw"><table>
+    <caption>Sealed holdout · 2019-01-01 → 2026-09-02 · paired on one engine</caption>
+    <thead><tr><th>Configuration</th><th class="v">CAGR</th><th class="v">Max DD</th><th class="v">Sharpe</th><th class="v">Calmar</th></tr></thead>
+    <tbody>
+      <tr><td>previous deployed config</td><td class="v">21.70%</td><td class="v">&minus;32.18%</td><td class="v">0.818</td><td class="v">0.674</td></tr>
+      <tr class="hi"><td><strong>candidate (shipped)</strong></td><td class="v">20.51%</td><td class="v">&minus;28.27%</td><td class="v">0.886</td><td class="v">0.725</td></tr>
+    </tbody>
+  </table></div>
+
+  <p class="measure">All three pre-registered gates passed, and 12 of the 13 perturbations improved as well. The candidate gives up roughly a point of annual return and buys four points of drawdown — which was the stated intent, because as Section 7 shows the realised drawdown was always the understated number, not the return.</p>
+
+  <div class="note warn">
+    <span class="lbl">The window was graded twice, and that is on the record</span>
+    <p>After the first grading, an adversarial review found a fidelity defect in the engine that had just produced it: the backtest could route the defensive sleeve into 2&times; funds and gave it a full weighted slot, neither of which the live allocator does. The defect flattered the candidate asymmetrically, because a defensive fill scored negligibly under the old weighting scheme and took a full slot under the new one.</p>
+    <p>The engine was corrected and the window re-graded under unchanged criteria. Both gradings pass; the figures above are the corrected ones. This is a second look at a spent window, and it is recorded as such rather than quietly overwritten. No criterion moved and no candidate was added or dropped.</p>
+  </div>
+</section>
+
+<section>
+  <h2>4 · What failed</h2>
+  <p class="measure">Fifteen candidate changes were measured, each on the median of thirteen perturbations, in-sample only. Three survived. Reporting the twelve that did not is the point of this section — a paper that lists only its successes has told you nothing about its search.</p>
+
+  <div class="tw"><table>
+    <caption>In-sample 2006–2018 · median across 13 configurations</caption>
+    <thead><tr><th>Change</th><th class="v">Sharpe</th><th class="v">Calmar</th><th class="v">CAGR</th><th class="v">MDD</th></tr></thead>
+    <tbody>
+      <tr><td>baseline</td><td class="v">0.702</td><td class="v">0.413</td><td class="v">13.82%</td><td class="v">&minus;32.90%</td></tr>
+      <tr class="hi"><td><strong>retire the VIX ≥ 35 tier</strong></td><td class="v">0.755</td><td class="v">0.542</td><td class="v">15.33%</td><td class="v">&minus;28.32%</td></tr>
+      <tr class="hi"><td><strong>equal weight</strong></td><td class="v">0.715</td><td class="v">0.438</td><td class="v">13.91%</td><td class="v">&minus;31.34%</td></tr>
+      <tr class="hi"><td><strong>leverage ceiling 1.25&times;</strong></td><td class="v">0.710</td><td class="v">0.438</td><td class="v">12.66%</td><td class="v">&minus;28.53%</td></tr>
+      <tr><td>EWMA volatility estimator</td><td class="v">0.700</td><td class="v">0.407</td><td class="v">13.82%</td><td class="v">&minus;34.05%</td></tr>
+      <tr><td>absolute-momentum gate at +2%</td><td class="v">0.687</td><td class="v">0.399</td><td class="v">13.44%</td><td class="v">&minus;33.27%</td></tr>
+      <tr><td>trend filter on the bond sleeve</td><td class="v">0.681</td><td class="v">0.389</td><td class="v">13.13%</td><td class="v">&minus;33.20%</td></tr>
+      <tr><td>drawdown brake 20% / 30%</td><td class="v">0.665</td><td class="v">0.390</td><td class="v">12.74%</td><td class="v">&minus;31.98%</td></tr>
+      <tr><td>drawdown brake 15% / 25%</td><td class="v">0.660</td><td class="v">0.400</td><td class="v">12.29%</td><td class="v">&minus;30.57%</td></tr>
+      <tr><td>risk-adjusted ranking (m / &sigma;)</td><td class="v">0.643</td><td class="v">0.337</td><td class="v">11.85%</td><td class="v">&minus;35.18%</td></tr>
+      <tr><td>multi-lookback 63 / 126 / 252</td><td class="v">0.599</td><td class="v">0.291</td><td class="v">11.16%</td><td class="v">&minus;38.46%</td></tr>
+      <tr><td>skip-month (12&minus;1) momentum</td><td class="v">0.585</td><td class="v">0.347</td><td class="v">11.12%</td><td class="v">&minus;31.95%</td></tr>
+      <tr><td>multi-lookback + skip-month</td><td class="v">0.584</td><td class="v">0.339</td><td class="v">10.95%</td><td class="v">&minus;32.08%</td></tr>
+      <tr class="hi"><td><strong>all three, corrected engine</strong></td><td class="v">0.797</td><td class="v">0.628</td><td class="v">14.45%</td><td class="v">&minus;23.05%</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="note">
+    <span class="lbl">The largest gain came from deleting machinery</span>
+    <p>Retiring the upper VIX tier was worth more than everything else combined: +1.51pp of CAGR <em>and</em> 4.6 points less drawdown. The tier de-levered to 0.5&times; at the point of maximum fear and then sat there through the rebound. A risk gate that increases drawdown is not a risk gate.</p>
+    <p>Three independent reviews of this strategy each proposed the opposite — replacing the step gates with a continuous sigmoid attenuation on implied volatility. That adds two fitted parameters to a search space whose stated problem is that its parameters are already unidentifiable.</p>
+  </div>
+
+  <div class="note warn">
+    <span class="lbl">Skip-month momentum is right in general and wrong here</span>
+    <p>Excluding the most recent month is among the best-supported results in the momentum literature, and it cost 2.7pp of CAGR on this system. The reason is structural rather than contradictory: the signal is already a nine-day EMA of 232-day returns, so short-horizon reversal is suppressed before any skip applies. Adding a 21-day skip does not remove reversal — it makes the signal three weeks stale on a book that rebalances every three days.</p>
+    <p>A published result holds under the conditions it was established in. This is a reminder to check whether yours are those conditions.</p>
+  </div>
+
+  <div class="note crit">
+    <span class="lbl">One change was excluded despite scoring best</span>
+    <p>The three-day minimum hold gates the risk ceiling as well as rotation, so a volatility spike on day two cannot de-lever the book. Removing that coupling scored highest in-sample: Sharpe 0.810, Calmar 0.650.</p>
+    <p>It is not shipped. During earlier engine work it had already been measured on the full window and was worse there, so it must degrade in the holdout period — meaning the holdout could not grade it honestly. Shipping it on a result already seen would be precisely the error this protocol exists to prevent.</p>
+  </div>
+</section>
+
+<section>
+  <h2>5 · The statistic that needs an error bar</h2>
+  <p class="measure">Two standard measures address overfitting, and they answer different questions. The Deflated Sharpe Ratio asks whether the strategy family has edge once the search is paid for. The Probability of Backtest Overfitting asks whether the specific configuration can be told apart from its neighbours out of sample. They routinely disagree, which is the reason to report both.</p>
+
+  <h3>Deflated Sharpe</h3>
+  <p class="measure">Deflate the observed Sharpe by the Sharpe the best of <var>N</var> random trials would be expected to reach on luck alone, then ask whether what remains is still positive.</p>
+  <div class="eq">
+    <div class="m">SR* &nbsp;=&nbsp; &radic;<span style="border-top:1px solid;padding:0 .15em">Var[SR]</span> &nbsp;&middot;&nbsp; E<span>[</span>max <var>z</var><sub>N</sub><span>]</span></div>
+    <p class="eqnote">with E[max&nbsp;<var>z</var><sub>N</sub>] the expected maximum of <var>N</var> standard normals, then DSR = PSR evaluated against SR* rather than zero. At <var>N</var>&nbsp;=&nbsp;1,386 documented trials, SR*&nbsp;=&nbsp;0.11 annualised against an observed 0.89, giving <strong>DSR = 0.9998</strong>. The family edge is not explained by search luck.</p>
+  </div>
+
+  <h3>Probability of Backtest Overfitting</h3>
+  <p class="measure">Split the sample into <var>S</var> blocks; for every way of choosing <var>S</var>/2 of them as in-sample, take the best configuration in-sample and find its rank among the others out-of-sample. PBO is how often that winner lands at or below the out-of-sample median.</p>
+  <div class="eq">
+    <div class="m">
+      PBO &nbsp;=&nbsp;
+      <span class="frac"><span class="num">1</span><span class="den">|C|</span></span>
+      &nbsp;&sum;<sub>c&isin;C</sub>&nbsp; <b>1</b><span>[</span> &lambda;<sub>c</sub> &le; 0 <span>]</span>,
+      &nbsp;&nbsp; &lambda;<sub>c</sub> = log
+      <span class="frac"><span class="num"><var>w</var><sub>c</sub></span><span class="den">1 &minus; <var>w</var><sub>c</sub></span></span>
+    </div>
+    <p class="eqnote"><var>w</var><sub>c</sub> is the winner's relative out-of-sample rank in split <var>c</var>. With <var>S</var>&nbsp;=&nbsp;16 there are C(16,8) = 12,870 splits.</p>
+  </div>
+
+  <p class="measure">Measured on this strategy, PBO = <strong>0.306</strong>. The temptation is to read that as evidence the configuration is identifiable. <strong>It is not, and neither was the 0.425 this project reported previously.</strong></p>
+
+  <p class="measure">The twelve thousand splits are not twelve thousand independent observations. They all reuse the same sixteen blocks of a single realisation, so the effective sample size is the number of <em>blocks</em>, not the number of splits. More splits buys precision on the combinatorics, not on the estimate. Simulating twenty-four pure-noise grids of identical shape — where the true PBO is 0.5 by construction — gives the null distribution:</p>
+
+  <div class="tw"><table>
+    <caption>PBO against its simulated null · 135 configs &times; 5,198 observations</caption>
+    <thead><tr><th>Measurement</th><th class="v">PBO</th><th class="v">Distance from null</th><th>Reading</th></tr></thead>
+    <tbody>
+      <tr><td>pure-noise null (24 grids)</td><td class="v">0.494 &plusmn; 0.112</td><td class="v">&mdash;</td><td>true value is 0.5 by construction</td></tr>
+      <tr><td>previously reported</td><td class="v">0.425</td><td class="v">&minus;0.62 sd</td><td>inside the noise band</td></tr>
+      <tr class="hi"><td><strong>this configuration</strong></td><td class="v">0.306</td><td class="v">&minus;1.68 sd</td><td>inside the noise band</td></tr>
+    </tbody>
+  </table></div>
+
+  <p class="measure">A standard deviation of <strong>0.112</strong> means a PBO quoted to three decimals is false precision. Both measurements sit inside the band. The honest conclusion is not "the configuration is a coin flip" and not "the configuration is identifiable" — it is that <em>this test lacks the resolution to decide</em> at this grid size and sample length, and that saying so is the result.</p>
+
+  <p class="measure">Almost no published PBO comes with this band. It costs about ninety seconds of compute to produce.</p>
+</section>
+
+<section>
+  <h2>6 · Measuring execution, not weather</h2>
+  <p class="measure">The system decides after the close and fills at the next open, so a naive comparison of fill price against decision price measures an overnight gap — and a whole weekend when the decision lands on a Friday. That is market movement, symmetric and averaging to nothing, not a cost. Separating the two changes the number by a factor of three.</p>
+  <div class="tw"><table>
+    <caption>105 live fills, notional-weighted</caption>
+    <thead><tr><th>Measure</th><th class="v">bps</th><th>What it is</th></tr></thead>
+    <tbody>
+      <tr class="hi"><td><strong>execution</strong> — fill vs the session open</td><td class="v">3.51</td><td>the only part the account controls</td></tr>
+      <tr><td>queue drift — fill vs the decision close</td><td class="v">5.27</td><td>overnight and weekend market movement</td></tr>
+      <tr><td>charged to the backtest</td><td class="v">9.5</td><td>deliberately above both</td></tr>
+    </tbody>
+  </table></div>
+  <p class="measure">One sell recorded a 1,002&nbsp;bps apparent slippage. It executed 98&nbsp;bps from the open; the remaining 904 was a 2&times; semiconductor fund falling 10% between a Friday decision and a Monday open. Nothing was executed badly. The cost charged to the backtest was left at 9.5&nbsp;bps — above measured execution, and above execution plus drift combined — because lowering it on 105 fills with a 70&nbsp;bp standard deviation would flatter the backtest on thin evidence.</p>
+</section>
+
+<section>
+  <h2>7 · What is still against it</h2>
+  <p class="measure">A passed holdout does not repeal the rest of the evidence.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Measure</th><th class="v">Value</th><th>Reading</th></tr></thead>
+    <tbody>
+      <tr><td>P(max drawdown worse than &minus;40%)</td><td class="v">63.4%</td><td>Monte Carlo. Size to this, not to the realised &minus;28.4%.</td></tr>
+      <tr><td>Share of days underwater</td><td class="v">89.5%</td><td>At a new high roughly one day in ten.</td></tr>
+      <tr><td>Longest underwater stretch</td><td class="v">346 d</td><td>Sixteen months below the prior peak.</td></tr>
+      <tr><td>Minimum backtest length</td><td class="v">14.1 yr</td><td>Against 20.6 available. Further searching is nearly exhausted.</td></tr>
+      <tr><td>Holdout attempts remaining</td><td class="v">0</td><td>Further evidence must come from forward time.</td></tr>
+      <tr><td>Shipped config vs grid best</td><td class="v">0.0002</td><td>It is the near-argmax of a grid it was selected on.</td></tr>
+      <tr><td>Live record</td><td class="v">0 days</td><td>This configuration has never traded.</td></tr>
+    </tbody>
+  </table></div>
+  <p class="measure">Two of these deserve emphasis. The strategy spends <strong>89.5% of its days below a prior high</strong> — the 18.5% annual figure is earned in bursts separated by long, uncomfortable flat stretches, and any live allocation should be sized for the temperament that requires rather than for the headline. And the shipped configuration is the near-top of a grid it was partly selected on, which is exactly the pattern PBO exists to catch and exactly the claim PBO turned out to lack the power to adjudicate.</p>
+  <p class="measure">This note therefore makes no forward-looking claim. It documents a measurement and the protocol that produced it. Nothing here is investment advice.</p>
+</section>
+
+<section>
+  <h2>8 · Reproducing it</h2>
+  <p class="measure">Every figure above regenerates from the price data. The overfitting audit was rebuilt specifically because its numbers had been published for six weeks with only the output JSON committed — a headline statistic nobody can rerun is an assertion, not a measurement.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Command</th><th>Produces</th></tr></thead>
+    <tbody>
+      <tr><td class="k">reports/holdout_v2.py</td><td>the sealed test, Section 3</td></tr>
+      <tr><td class="k">reports/plateau_v2.py</td><td>the fifteen candidate changes, Section 4</td></tr>
+      <tr><td class="k">reports/overfitting_audit.py</td><td>PBO, DSR, MinBTL and the null band, Section 5</td></tr>
+      <tr><td class="k">reports/harness_regress_wide_v2.py</td><td>proof the engine is unchanged where it claims to be</td></tr>
+      <tr><td class="k">reports/dualmom_spec.py</td><td>the textbook comparison</td></tr>
+    </tbody>
+  </table></div>
+  <p class="measure">Each carries an offline <code>__selfcheck</code>. The audit's validates its CSCV implementation against cases with known answers, because a plausible-looking PBO is indistinguishable from a wrong one by inspection — a lesson learned by shipping a check that asserted on a single noise draw and failed on an unlucky seed.</p>
+</section>
+
+<footer>
+  Figures measured 2026-09-15 on data through 2026-09-02, at 9.5&nbsp;bps per side.<br>
+  Backtested results are hypothetical and carry no implication of future performance.<br>
+  This note is a record of a measurement. It is not investment advice, and its author is not a licensed adviser.
+</footer>
+
+</div>
+
+<div class="tip" id="tip"></div>
+
+<script>
+const YEARS = [
+  [2006,  1.0, 13.8], [2007, 25.0,  5.3], [2008,  5.5,-36.2], [2009,  8.4, 22.7],
+  [2010, 26.2, 13.1], [2011, -0.8,  0.9], [2012, 22.3, 14.2], [2013, 34.0, 29.0],
+  [2014, 32.6, 14.6], [2015,  0.1,  1.3], [2016, 22.1, 13.6], [2017, 32.4, 20.8],
+  [2018,-13.4, -5.2], [2019, 31.4, 31.1], [2020, 52.7, 17.2], [2021, 32.7, 30.5],
+  [2022,-13.7,-18.6], [2023, 29.7, 26.7], [2024, 34.0, 25.6], [2025, 12.5, 18.0],
+  [2026, 28.5, 12.1]
+];
+const LIM = 45;                       // pp, symmetric; max |excess| is 41.8 in 2008
+const pct = v => 50 + (v / LIM) * 50; // map excess -> 0..100% of the track
+
+const rows = document.getElementById('rows');
+const tip  = document.getElementById('tip');
+
+YEARS.forEach(([yr, s, spy]) => {
+  const d = s - spy, win = d > 0;
+  const row = document.createElement('div');
+  row.className = 'row';
+  row.tabIndex = 0;
+  const a = Math.min(pct(d), 50), b = Math.max(pct(d), 50);
+  row.innerHTML =
+    `<span class="yr">${yr}</span>` +
+    `<span class="track"><i class="zero" style="left:50%"></i>` +
+    `<i class="bar" style="left:${a}%;width:${Math.max(b - a, 0.35)}%;` +
+    `background:var(${win ? '--pos' : '--neg'})"></i></span>` +
+    `<span class="val">${d > 0 ? '+' : ''}${d.toFixed(1)}</span>`;
+
+  const show = e => {
+    const r = (e.currentTarget || row).getBoundingClientRect();
+    tip.innerHTML = `<b>${yr}</b>${yr === 2026 ? ' (partial)' : ''}<br>` +
+      `strategy <b>${s > 0 ? '+' : ''}${s.toFixed(1)}%</b><br>` +
+      `SPY <b>${spy > 0 ? '+' : ''}${spy.toFixed(1)}%</b><br>` +
+      `excess <b>${d > 0 ? '+' : ''}${d.toFixed(1)} pp</b>`;
+    tip.style.opacity = 1;
+    const top = Math.max(8, r.top - 8);
+    tip.style.left = Math.min(window.innerWidth - 150, r.left + 60) + 'px';
+    tip.style.top  = top + 'px';
+    tip.style.transform = 'translateY(-100%)';
+  };
+  const hide = () => { tip.style.opacity = 0; };
+  row.addEventListener('mouseenter', show);
+  row.addEventListener('mousemove', show);
+  row.addEventListener('mouseleave', hide);
+  row.addEventListener('focus', show);
+  row.addEventListener('blur', hide);
+  rows.appendChild(row);
+});
+
+const ticks = document.getElementById('ticks');
+[-40, -20, 0, 20, 40].forEach(t => {
+  const el = document.createElement('span');
+  el.style.left = pct(t) + '%';
+  el.textContent = (t > 0 ? '+' : '') + t;
+  ticks.appendChild(el);
+});
+</script>

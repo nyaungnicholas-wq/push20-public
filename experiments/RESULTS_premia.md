@@ -1,0 +1,42 @@
+- 2026-08-30 premia-vs-spy SPY buy-and-hold: CAGR 11.1% MDD -55.2% Sharpe 0.64 vs SPY +0.00pp
+- 2026-08-30 premia-vs-spy Vol-targeted SPY: CAGR 9.9% MDD -31.9% Sharpe 0.72 vs SPY -1.13pp
+- 2026-08-30 premia-vs-spy SPY 200d trend: CAGR 9.4% MDD -25.4% Sharpe 0.79 vs SPY -1.61pp
+- 2026-08-30 premia-vs-spy Top-3 momentum: CAGR 8.9% MDD -24.7% Sharpe 0.69 vs SPY -2.16pp
+- 2026-08-30 premia-vs-spy 60/40 SPY-IEF: CAGR 8.2% MDD -32.6% Sharpe 0.78 vs SPY -2.87pp
+- 2026-08-30 premia-vs-spy Dual momentum GEM: CAGR 7.7% MDD -33.7% Sharpe 0.54 vs SPY -3.37pp
+- 2026-08-30 premia-vs-spy Inverse-vol 4: CAGR 7.5% MDD -20.5% Sharpe 0.83 vs SPY -3.58pp
+- 2026-08-30 premia-vs-spy Equal-weight 5: CAGR 7.2% MDD -34.9% Sharpe 0.68 vs SPY -3.82pp
+- 2026-08-30 levered-premia 60/40 SPY-IEF [vol-matched]: CAGR 13.2% MDD -41.4% Sharpe 0.73 avgL 2.27 vs SPY +2.18pp
+- 2026-08-30 levered-premia 60/40 SPY-IEF [2.0x fixed]: CAGR 12.6% MDD -59.4% Sharpe 0.66 avgL 2.00 vs SPY +1.56pp
+- 2026-08-30 levered-premia SPY 200d trend [vol-matched]: CAGR 12.0% MDD -38.1% Sharpe 0.66 avgL 1.81 vs SPY +0.99pp
+- 2026-08-30 levered-premia SPY 200d trend [2.0x fixed]: CAGR 14.8% MDD -46.6% Sharpe 0.68 avgL 2.00 vs SPY +3.73pp
+- 2026-08-30 levered-premia Equal-weight 5 [vol-matched]: CAGR 8.9% MDD -48.0% Sharpe 0.53 avgL 2.10 vs SPY -2.18pp
+- 2026-08-30 levered-premia Equal-weight 5 [2.0x fixed]: CAGR 10.5% MDD -61.0% Sharpe 0.56 avgL 2.00 vs SPY -0.54pp
+- 2026-08-30 levered-premia Inverse-vol 4 [vol-matched]: CAGR 11.9% MDD -47.0% Sharpe 0.67 avgL 2.30 vs SPY +0.88pp
+- 2026-08-30 levered-premia Inverse-vol 4 [2.0x fixed]: CAGR 11.5% MDD -38.2% Sharpe 0.68 avgL 2.00 vs SPY +0.44pp
+- 2026-08-30 levered-premia Top-3 momentum [vol-matched]: CAGR 11.6% MDD -34.6% Sharpe 0.64 avgL 1.62 vs SPY +0.54pp
+- 2026-08-30 levered-premia Top-3 momentum [2.0x fixed]: CAGR 13.2% MDD -44.9% Sharpe 0.59 avgL 2.00 vs SPY +2.17pp
+- 2026-08-30 levered-premia Vol-targeted SPY [vol-matched]: CAGR 13.5% MDD -42.4% Sharpe 0.71 avgL 1.61 vs SPY +2.40pp
+- 2026-08-30 levered-premia Vol-targeted SPY [2.0x fixed]: CAGR 15.1% MDD -58.6% Sharpe 0.62 avgL 2.00 vs SPY +4.01pp
+- 2026-08-30 levered-premia 60/40 SPY-IEF [vol-matched]: CAGR 12.6% MDD -41.8% Sharpe 0.71 avgL 2.27 vs SPY +1.60pp
+- 2026-08-30 levered-premia 60/40 SPY-IEF [2.0x fixed]: CAGR 12.6% MDD -59.4% Sharpe 0.66 avgL 2.00 vs SPY +1.55pp
+- 2026-08-30 levered-premia SPY 200d trend [vol-matched]: CAGR 11.4% MDD -38.4% Sharpe 0.63 avgL 1.81 vs SPY +0.35pp
+- 2026-08-30 levered-premia SPY 200d trend [2.0x fixed]: CAGR 14.8% MDD -46.6% Sharpe 0.68 avgL 2.00 vs SPY +3.72pp
+- 2026-08-30 levered-premia Equal-weight 5 [vol-matched]: CAGR 8.3% MDD -48.4% Sharpe 0.50 avgL 2.10 vs SPY -2.77pp
+- 2026-08-30 levered-premia Equal-weight 5 [2.0x fixed]: CAGR 10.5% MDD -61.0% Sharpe 0.56 avgL 2.00 vs SPY -0.54pp
+- 2026-08-30 levered-premia Inverse-vol 4 [vol-matched]: CAGR 11.3% MDD -47.8% Sharpe 0.65 avgL 2.30 vs SPY +0.26pp
+- 2026-08-30 levered-premia Inverse-vol 4 [2.0x fixed]: CAGR 11.5% MDD -38.2% Sharpe 0.68 avgL 2.00 vs SPY +0.43pp
+- 2026-08-30 levered-premia Top-3 momentum [vol-matched]: CAGR 11.0% MDD -35.0% Sharpe 0.61 avgL 1.62 vs SPY -0.07pp
+- 2026-08-30 levered-premia Top-3 momentum [2.0x fixed]: CAGR 13.2% MDD -44.9% Sharpe 0.59 avgL 2.00 vs SPY +2.17pp
+- 2026-08-30 levered-premia Vol-targeted SPY [vol-matched]: CAGR 12.8% MDD -42.9% Sharpe 0.68 avgL 1.61 vs SPY +1.73pp
+- 2026-08-30 levered-premia Vol-targeted SPY [2.0x fixed]: CAGR 15.1% MDD -58.6% Sharpe 0.62 avgL 2.00 vs SPY +4.00pp
+- 2026-08-30 trend2x-vs-spy FULL 1993-now: CAGR 15.8% vs SPY 10.9% (+4.95pp), MDD -46.0% vs -55.2%, OOS 1993-2005 +6.36pp; script experiments/2026-08-30_trend2x_vs_spy.py
+- 2026-08-30 trend-frontier funded +30bps 3.0x: CAGR 21.7% edge +10.81pp MDD -61.6% Sharpe 0.71, OOS +11.74pp; script experiments/2026-08-30_trend_leverage_frontier.py
+- 2026-08-30 trend-frontier funded +30bps 3.5x: CAGR 23.4% edge +12.54pp MDD -67.9% Sharpe 0.70, OOS +13.22pp; script experiments/2026-08-30_trend_leverage_frontier.py
+- 2026-08-30 trend-frontier funded +30bps 4.0x: CAGR 24.6% edge +13.77pp MDD -73.3% Sharpe 0.69, OOS +14.19pp; script experiments/2026-08-30_trend_leverage_frontier.py
+- 2026-08-30 trend-frontier LETF-like +90bps 3.5x: CAGR 22.0% edge +11.14pp MDD -68.1% Sharpe 0.68, OOS +11.94pp; script experiments/2026-08-30_trend_leverage_frontier.py
+- 2026-08-30 trend-frontier LETF-like +90bps 4.0x: CAGR 22.9% edge +12.08pp MDD -73.5% Sharpe 0.67, OOS +12.65pp; script experiments/2026-08-30_trend_leverage_frontier.py
+- 2026-08-30 trend-frontier retail +150bps 4.0x: CAGR 21.3% edge +10.42pp MDD -73.7% Sharpe 0.64, OOS +11.13pp; script experiments/2026-08-30_trend_leverage_frontier.py
+- 2026-08-30 divtrend-validated funded +30bps 5.0x: CAGR 24.0% MDD -53.7% Sharpe 0.75 vs SPY +12.63pp; script experiments/2026-08-30_divtrend_validated.py
+- 2026-08-30 divtrend-validated LETF-like +90bps 5.0x: CAGR 22.2% MDD -54.0% Sharpe 0.72 vs SPY +10.81pp; script experiments/2026-08-30_divtrend_validated.py
+- 2026-08-30 divtrend-validated retail +150bps 5.0x: CAGR 20.4% MDD -54.2% Sharpe 0.68 vs SPY +9.02pp; script experiments/2026-08-30_divtrend_validated.py

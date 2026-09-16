@@ -1,0 +1,31 @@
+{
+ "results": {
+  "baseline (ignores politics)": {
+   "return": 0.3214669182401755,
+   "mdd": -0.252286608247237,
+   "gated_days": 0
+  },
+  "bad politics (<=-0.2) -> no leverage": {
+   "return": 0.22667061985163284,
+   "mdd": -0.25312185278618726,
+   "gated_days": 114
+  },
+  "bad politics (<=-0.1) -> no leverage": {
+   "return": 0.2535891054448187,
+   "mdd": -0.23612298848519822,
+   "gated_days": 205
+  },
+  "bad politics (<=-0.2) -> half exposure": {
+   "return": 0.2538444134138531,
+   "mdd": -0.2123456321323397,
+   "gated_days": 114
+  },
+  "any negative day (<0) -> no leverage": {
+   "return": 0.31722439370058253,
+   "mdd": -0.2214967890861973,
+   "gated_days": 248
+  }
+ },
+ "n_headlines": 7500,
+ "n_political": 3943
+}

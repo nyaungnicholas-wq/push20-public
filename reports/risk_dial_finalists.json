@@ -1,0 +1,105 @@
+[
+ {
+  "name": "LIVE (today)",
+  "overrides": {},
+  "cagr": 0.2132,
+  "mdd": -0.3253,
+  "sharpe": 0.878,
+  "calmar": 0.6553950199815556,
+  "subperiods": {
+   "2006-2012": 0.1193,
+   "2013-2019": 0.1637,
+   "2020-2026": 0.2073
+  }
+ },
+ {
+  "name": "A  best-Calmar",
+  "overrides": {
+   "vol_target": 0.3,
+   "vol_cap_bull": 1.25,
+   "vol_window": 8,
+   "max_weight": 0.6
+  },
+  "cagr": 0.2034,
+  "mdd": -0.261,
+  "sharpe": 0.932,
+  "calmar": 0.7793103448275862,
+  "subperiods": {
+   "2006-2012": 0.1284,
+   "2013-2019": 0.1456,
+   "2020-2026": 0.2039
+  }
+ },
+ {
+  "name": "B  Calmar+CAGR",
+  "overrides": {
+   "vol_target": 0.35,
+   "vol_cap_bull": 1.25,
+   "vol_window": 8,
+   "max_weight": 0.6
+  },
+  "cagr": 0.2071,
+  "mdd": -0.2677,
+  "sharpe": 0.941,
+  "calmar": 0.7736271946208443,
+  "subperiods": {
+   "2006-2012": 0.1315,
+   "2013-2019": 0.1492,
+   "2020-2026": 0.2055
+  }
+ },
+ {
+  "name": "C  more CAGR",
+  "overrides": {
+   "vol_target": 0.4,
+   "vol_cap_bull": 1.5,
+   "vol_window": 8,
+   "max_weight": 0.4
+  },
+  "cagr": 0.2107,
+  "mdd": -0.2979,
+  "sharpe": 0.891,
+  "calmar": 0.707284323598523,
+  "subperiods": {
+   "2006-2012": 0.1276,
+   "2013-2019": 0.1603,
+   "2020-2026": 0.1916
+  }
+ },
+ {
+  "name": "D  high CAGR",
+  "overrides": {
+   "vol_target": 0.4,
+   "vol_cap_bull": 1.75,
+   "vol_window": 8,
+   "max_weight": 0.6
+  },
+  "cagr": 0.2306,
+  "mdd": -0.3452,
+  "sharpe": 0.868,
+  "calmar": 0.668018539976825,
+  "subperiods": {
+   "2006-2012": 0.1193,
+   "2013-2019": 0.1724,
+   "2020-2026": 0.2214
+  }
+ },
+ {
+  "name": "E  max CAGR",
+  "overrides": {
+   "vol_target": 0.35,
+   "vol_cap_bull": 2.0,
+   "vol_window": 8,
+   "max_weight": 0.6
+  },
+  "cagr": 0.2429,
+  "mdd": -0.3828,
+  "sharpe": 0.855,
+  "calmar": 0.6345350052246604,
+  "subperiods": {
+   "2006-2012": 0.1229,
+   "2013-2019": 0.1846,
+   "2020-2026": 0.2245
+  }
+ }
+]

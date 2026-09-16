@@ -1,0 +1,1881 @@
+{
+  "monthly_champion_benchmark": {
+    "cagr": 0.147,
+    "mdd": -0.315,
+    "sharpe": 0.73
+  },
+  "champion_params": {
+    "min_hold_days": 3,
+    "signal_ema": 9,
+    "defensive": [
+      "GLD",
+      "TLT"
+    ],
+    "vol_window": 25,
+    "vol_cap": 1.0,
+    "vol_floor": 0.5,
+    "regime_sma": 0,
+    "lookback": 232,
+    "top_n": 3,
+    "weighting": "return_prop",
+    "vol_target": 0.12
+  },
+  "champion_metrics": {
+    "cagr": 0.1406,
+    "mdd": -0.2304,
+    "sharpe": 0.832,
+    "ann_turn": 5.19,
+    "ann_fric": 0.0052,
+    "spy_cagr": 0.1049,
+    "spy_mdd": -0.5519,
+    "edge": 0.0358,
+    "final_val": 12.1702,
+    "crisis": {
+      "2008": [
+        0.07760992017570634,
+        -0.36236759856381406
+      ],
+      "2020": [
+        0.2418878323562308,
+        0.17235244076332146
+      ],
+      "2022": [
+        -0.0041531710288796875,
+        -0.1864640596823247
+      ]
+    }
+  },
+  "generations": {
+    "gen1": {
+      "diagnostic": {
+        "top5_cagr": 0.1104,
+        "bot5_cagr": 0.0133,
+        "top5_turn": 15.26,
+        "bot5_turn": 52.26,
+        "top5_fric": 0.0152,
+        "bot5_fric": 0.0523,
+        "whipsaw_count": 5,
+        "fric_bleed_count": 5,
+        "def_lag_count": 5,
+        "primary_issue": "FRICTION_BLEED \u2014 too many trades eating alpha"
+      },
+      "top10": [
+        {
+          "params": {
+            "min_hold_days": 0,
+            "signal_ema": 1,
+            "defensive": [
+              "GLD",
+              "TLT"
+            ],
+            "vol_window": 20,
+            "vol_cap": 1.0,
+            "vol_floor": 0.5,
+            "regime_sma": 0,
+            "lookback": 252,
+            "top_n": 3,
+            "weighting": "return_prop",
+            "vol_target": 0.15
+          },
+          "metrics": {
+            "cagr": 0.1104,
+            "mdd": -0.2789,
+            "sharpe": 0.623,
+            "ann_turn": 15.22,
+            "ann_fric": 0.0152,
+            "spy_cagr": 0.1049,
+            "spy_mdd": -0.5519,
+            "edge": 0.0055,
+            "final_val": 7.3005,
+            "crisis": {
+              "2008": [
+                -0.05919708895380471,
+                -0.36236759856381406
+              ],
+              "2020": [
+                0.26430600187439546,
+                0.17235244076332146
+              ],
+              "2022": [
+                0.05751926392964002,
+                -0.1864640596823247
+              ]
+            }
+          },
+          "score": 6.793
+        },
+        {
+          "params": {
+            "min_hold_days": 0,
+            "signal_ema": 1,
+            "defensive": [
+              "GLD",
+              "TLT"
+            ],
+            "vol_window": 20,
+            "vol_cap": 1.0,
+            "vol_floor": 0.5,
+            "regime_sma": 0,
+            "lookback": 252,
+            "top_n": 3,
+            "weighting": "equal",
+            "vol_target": 0.25
+          },
+          "metrics": {
+            "cagr": 0.1148,
+            "mdd": -0.2701,
+            "sharpe": 0.613,
+            "ann_turn": 14.52,
+            "ann_fric": 0.0145,
+            "spy_cagr": 0.1049,
+            "spy_mdd": -0.5519,
+            "edge": 0.0099,
+            "final_val": 7.8709,
+            "crisis": {
+              "2008": [
+                -0.0456343664543748,
+                -0.36236759856381406
+              ],
+              "2020": [
+                0.37837693138003137,
+                0.17235244076332146
+              ],
+              "2022": [
+                0.01412660031972468,
+                -0.1864640596823247
+              ]
+            }
+          },
+          "score": 6.7238
+        },
+        {
+          "params": {
+            "min_hold_days": 0,
+            "signal_ema": 1,
+            "defensive": [
+              "GLD",
+              "TLT"
+            ],
+            "vol_window": 20,
+            "vol_cap": 1.0,
+            "vol_floor": 0.5,
+            "regime_sma": 0,
+            "lookback": 252,
+            "top_n": 3,
+            "weighting": "equal",
+            "vol_target": 0.2
+          },
+          "metrics": {
+            "cagr": 0.1114,
+            "mdd": -0.2911,
+            "sharpe": 0.615,
+            "ann_turn": 14.73,
+            "ann_fric": 0.0147,
+            "spy_cagr": 0.1049,
+            "spy_mdd": -0.5519,
+            "edge": 0.0065,
+            "final_val": 7.426,
+            "crisis": {
+              "2008": [
+                -0.06355659593865315,
+                -0.36236759856381406
+              ],
+              "2020": [
+                0.33594485484456627,
+                0.17235244076332146
+              ],
+              "2022": [
+                0.013852068727391753,
+                -0.1864640596823247
+              ]
+            }
+          },
+          "score": 6.720000000000001
+        },
+        {
+          "params": {
+            "min_hold_days": 0,
+            "signal_ema": 1,
+            "defensive": [
+              "GLD",
+              "TLT"
+            ],
+            "vol_window": 20,
+            "vol_cap": 1.0,
+            "vol_floor": 0.5,
+            "regime_sma": 0,
+            "lookback": 252,
+            "top_n": 2,
+            "weighting": "return_prop",
+            "vol_target": 0.1
+          },
+          "metrics": {
+            "cagr": 0.0983,
+            "mdd": -0.2383,
+            "sharpe": 0.606,
+            "ann_turn": 16.4,
+            "ann_fric": 0.0164,
+            "spy_cagr": 0.1049,
+            "spy_mdd": -0.5519,
+            "edge": -0.0065,
+            "final_val": 5.938,
+            "crisis": {
+              "2008": [
+                0.015042144649829892,
+                -0.36236759856381406
+              ],
+              "2020": [
+                0.18503126161044126,
+                0.17235244076332146
+              ],
+              "2022": [
+                0.04705873256864157,
+                -0.1864640596823247
+              ]
+            }
+          },
+          "score": 6.5385
+        },
+        {
+          "params": {
+            "min_hold_days": 0,
+            "signal_ema": 1,
+            "defensive": [
+              "GLD",
+              "TLT"
+            ],
+            "vol_window": 20,
+            "vol_cap": 1.0,
+            "vol_floor": 0.5,
+            "regime_sma": 0,
+            "lookback": 252,
+            "top_n": 3,
+            "weighting": "return_prop",
+            "vol_target": 0.25
+          },
+          "metrics": {
+            "cagr": 0.1171,
+            "mdd": -0.2835,
+            "sharpe": 0.588,
+            "ann_turn": 15.44,
+            "ann_fric": 0.0154,
+            "spy_cagr": 0.1049,
+            "spy_mdd": -0.5519,
+            "edge": 0.0122,
+            "final_val": 8.1924,
+            "crisis": {
+              "2008": [
+                -0.05963573103965958,
+                -0.36236759856381406
+              ],
+              "2020": [
+                0.36229054728386956,
+                0.17235244076332146
+              ],
+              "2022": [
+                0.09762376171746157,
+                -0.1864640596823247
+              ]
+            }
+          },
+          "score": 6.4899
+        },
+        {
+          "params": {
+            "min_hold_days": 0,
+            "signal_ema": 1,
+            "defensive": [
+              "GLD",
+              "TLT"
+            ],
+            "vol_window": 20,
+            "vol_cap": 1.0,
+            "vol_floor": 0.5,
+            "regime_sma": 0,
+            "lookback": 252,
+            "top_n": 2,
+            "weighting": "equal",
+            "vol_target": 0.1
+          },
+          "metrics": {
+            "cagr": 0.0939,
+            "mdd": -0.2118,
+            "sharpe": 0.602,
+            "ann_turn": 16.45,
+            "ann_fric": 0.0164,
+            "spy_cagr": 0.1049,
+            "spy_mdd": -0.5519,
+            "edge": -0.011,
+            "final_val": 5.4979,
+            "crisis": {
+              "2008": [
+                0.051366170152062685,
+                -0.36236759856381406
+              ],
+              "2020": [
+                0.18999246531264502,
+                0.17235244076332146
+              ],
+              "2022": [
+                -0.009585893412582536,
+                -0.1864640596823247
+              ]
+            }
+          },
+          "score": 6.467499999999999
+        },
+        {
+          "params": {
+            "min_hold_days": 0,
+            "signal_ema": 1,
+            "defensive": [
+              "GLD",
+              "TLT"
+            ],
+            "vol_window": 20,
+            "vol_cap": 1.0,
+            "vol_floor": 0.5,
+            "regime_sma": 0,
+            "lookback": 252,
+            "top_n": 3,
+            "weighting": "equal",
+            "vol_target": 0.0
+          },
+          "metrics": {
+            "cagr": 0.1098,
+            "mdd": -0.3558,
+            "sharpe": 0.549,
+            "ann_turn": 14.37,
+            "ann_fric": 0.0144,
+            "spy_cagr": 0.1049,
+            "spy_mdd": -0.5519,
+            "edge": 0.0049,
+            "final_val": 7.2292,
+            "crisis": {
+              "2008": [
+                -0.05051334408813679,
+                -0.36236759856381406
+              ],
+              "2020": [
+                0.2817845376005532,
+                0.17235244076332146
+              ],
+              "2022": [
+                0.01654873985459404,
+                -0.1864640596823247
+              ]
+            }
+          },
+          "score": 6.0488
+        },
+        {
+          "params": {
+            "min_hold_days": 0,
+            "signal_ema": 1,
+            "defensive": [
+              "GLD",
+              "TLT"
+            ],
+            "vol_window": 20,
+            "vol_cap": 1.0,
+            "vol_floor": 0.5,
+            "regime_sma": 0,
+            "lookback": 252,
+            "top_n": 2,
+            "weighting": "equal",
+            "vol_target": 0.15
+          },
+          "metrics": {
+            "cagr": 0.0978,
+            "mdd": -0.2687,
+            "sharpe": 0.544,
+            "ann_turn": 17.28,
+            "ann_fric": 0.0173,
+            "spy_cagr": 0.1049,
+            "spy_mdd": -0.5519,
+            "edge": -0.0071,
+            "final_val": 5.8858,
+            "crisis": {
+              "2008": [
+                -0.023878523465330037,
+                -0.36236759856381406
+              ],
+              "2020": [
+                0.18058932842416997,
+                0.17235244076332146
+              ],
+              "2022": [
+                0.06382623545937838,
+                -0.1864640596823247
+              ]
+            }
+          },
+          "score": 5.9148000000000005
+        },
+        {
+          "params": {
+            "min_hold_days": 0,
+            "signal_ema": 1,
+            "defensive": [
+              "GLD",
+              "TLT"
+            ],
+            "vol_window": 20,
+            "vol_cap": 1.0,
+            "vol_floor": 0.5,
+            "regime_sma": 0,
+            "lookback": 252,
+            "top_n": 3,
+            "weighting": "return_prop",
+            "vol_target": 0.0
+          },
+          "metrics": {
+            "cagr": 0.1114,
+            "mdd": -0.3551,
+            "sharpe": 0.525,
+            "ann_turn": 15.49,
+            "ann_fric": 0.0155,
+            "spy_cagr": 0.1049,
+            "spy_mdd": -0.5519,
+            "edge": 0.0066,
+            "final_val": 7.4375,
+            "crisis": {
+              "2008": [
+                -0.06251816861429227,
+                -0.36236759856381406
+              ],
+              "2020": [
+                0.2610142894902425,
+                0.17235244076332146
+              ],
+              "2022": [
+                0.0969187182991591,
+                -0.1864640596823247
+              ]
+            }
+          },
+          "score": 5.820200000000001
+        },
+        {
+          "params": {
+            "min_hold_days": 0,
+            "signal_ema": 1,
+            "defensive": [
+              "GLD",
+              "TLT"
+            ],
+            "vol_window": 20,
+            "vol_cap": 1.0,
+            "vol_floor": 0.5,
+            "regime_sma": 0,
+            "lookback": 252,
+            "top_n": 2,
+            "weighting": "return_prop",
+            "vol_target": 0.2
+          },
+          "metrics": {
+            "cagr": 0.1064,
+            "mdd": -0.3317,
+            "sharpe": 0.521,
+            "ann_turn": 17.66,
+            "ann_fric": 0.0177,
+            "spy_cagr": 0.1049,
+            "spy_mdd": -0.5519,
+            "edge": 0.0015,
+            "final_val": 6.8224,
+            "crisis": {
+              "2008": [
+                -0.09963622328553345,
+                -0.36236759856381406
+              ],
+              "2020": [
+                0.2262770808697585,
+                0.17235244076332146
+              ],
+              "2022": [
+                0.22047807901472494,
+                -0.1864640596823247
+              ]
+            }
+          },
+          "score": 5.745
+        }
+      ]
+    },
+    "gen2": {
+      "diagnostic": {
+        "top5_cagr": 0.1357,
+        "bot5_cagr": 0.1159,
+        "top5_turn": 4.95,
+        "bot5_turn": 11.25,
+        "top5_fric": 0.0049,
+        "bot5_fric": 0.0112,
+        "whipsaw_count": 2,
+        "fric_bleed_count": 0,
+        "def_lag_count": 0,
+        "primary_issue": "WHIPSAW \u2014 daily noise causing excessive churn"
+      },
+      "top10": [
+        {
+          "params": {
+            "min_hold_days": 3,
+            "signal_ema": 10,
+            "defensive": [
+              "GLD",
+              "TLT"
+            ],
+            "vol_window": 20,
+            "vol_cap": 1.0,
+            "vol_floor": 0.5,
+            "regime_sma": 0,
+            "lookback": 252,
+            "top_n": 3,
+            "weighting": "return_prop",
+            "vol_target": 0.15
+          },
+          "metrics": {
+            "cagr": 0.138,
+            "mdd": -0.2512,
+            "sharpe": 0.748,
+            "ann_turn": 4.86,
+            "ann_fric": 0.0049,
+            "spy_cagr": 0.1049,
+            "spy_mdd": -0.5519,
+            "edge": 0.0331,
+            "final_val": 11.6406,
+            "crisis": {
+              "2008": [
+                -0.016897120685028577,
+                -0.36236759856381406
+              ],
+              "2020": [
+                0.34582786029884227,
+                0.17235244076332146
+              ],
+              "2022": [
+                0.06891495078515719,
+                -0.1864640596823247
+              ]
+            }
+          },
+          "score": 8.2362
+        },
+        {
+          "params": {
+            "min_hold_days": 3,
+            "signal_ema": 5,
+            "defensive": [
+              "GLD",
+              "TLT"
+            ],
+            "vol_window": 20,
+            "vol_cap": 1.0,
+            "vol_floor": 0.5,
+            "regime_sma": 0,
+            "lookback": 252,
+            "top_n": 3,
+            "weighting": "return_prop",
+            "vol_target": 0.15
+          },
+          "metrics": {
+            "cagr": 0.1333,
+            "mdd": -0.2527,
+            "sharpe": 0.729,
+            "ann_turn": 5.68,
+            "ann_fric": 0.0057,
+            "spy_cagr": 0.1049,
+            "spy_mdd": -0.5519,
+            "edge": 0.0284,
+            "final_val": 10.7661,
+            "crisis": {
+              "2008": [
+                -0.02337048949499232,
+                -0.36236759856381406
+              ],
+              "2020": [
+                0.3206634143886291,
+                0.17235244076332146
+              ],
+              "2022": [
+                0.06269753376212606,
+                -0.1864640596823247
+              ]
+            }
+          },
+          "score": 8.013300000000001
+        },
+        {
+          "params": {
+            "min_hold_days": 1,
+            "signal_ema": 10,
+            "defensive": [
+              "GLD",
+              "TLT",
+              "BIL"
+            ],
+            "vol_window": 20,
+            "vol_cap": 1.0,
+            "vol_floor": 0.5,
+            "regime_sma": 0,
+            "lookback": 252,
+            "top_n": 3,
+            "weighting": "return_prop",
+            "vol_target": 0.15
+          },
+          "metrics": {
+            "cagr": 0.13,
+            "mdd": -0.2486,
+            "sharpe": 0.729,
+            "ann_turn": 5.44,
+            "ann_fric": 0.0054,
+            "spy_cagr": 0.1049,
+            "spy_mdd": -0.5519,
+            "edge": 0.0251,
+            "final_val": 10.1846,
+            "crisis": {
+              "2008": [
+                -0.0861138236226241,
+                -0.36236759856381406
+              ],
+              "2020": [
+                0.3365003503674009,
+                0.17235244076332146
+              ],
+              "2022": [
+                0.08790515176907543,
+                -0.1864640596823247
+              ]
+            }
+          },
+          "score": 7.990200000000001
+        },
+        {
+          "params": {
+            "min_hold_days": 5,
+            "signal_ema": 10,
+            "defensive": [
+              "GLD",
+              "TLT"
+            ],
+            "vol_window": 20,
+            "vol_cap": 1.0,
+            "vol_floor": 0.5,
+            "regime_sma": 0,
+            "lookback": 252,
+            "top_n": 3,
+            "weighting": "equal",
+            "vol_target": 0.25
+          },
+          "metrics": {
+            "cagr": 0.1395,
+            "mdd": -0.2539,
+            "sharpe": 0.721,
+            "ann_turn": 3.84,
+            "ann_fric": 0.0038,
+            "spy_cagr": 0.1049,
+            "spy_mdd": -0.5519,
+            "edge": 0.0346,
+            "final_val": 11.9407,
+            "crisis": {
+              "2008": [
+                0.04733865565813433,
+                -0.36236759856381406
+              ],
+              "2020": [
+                0.44076320527430046,
+                0.17235244076332146
+              ],
+              "2022": [
+                -0.03717987948630774,
+                -0.1864640596823247
+              ]
+            }
+          },
+          "score": 7.9767
+        },
+        {
+          "params": {
+            "min_hold_days": 0,
+            "signal_ema": 10,
+            "defensive": [
+              "GLD",
+              "TLT"
+            ],
+            "vol_window": 20,
+            "vol_cap": 1.0,
+            "vol_floor": 0.5,
+            "regime_sma": 0,
+            "lookback": 252,
+            "top_n": 3,
+            "weighting": "equal",
+            "vol_target": 0.25
+          },
+          "metrics": {
+            "cagr": 0.1378,
+            "mdd": -0.2612,
+            "sharpe": 0.719,
+            "ann_turn": 4.93,
+            "ann_fric": 0.0049,
+            "spy_cagr": 0.1049,
+            "spy_mdd": -0.5519,
+            "edge": 0.0329,
+            "final_val": 11.5991,
+            "crisis": {
+              "2008": [
+                -0.027988784530411204,
+                -0.36236759856381406
+              ],
+              "2020": [
+                0.4618736244927233,
+                0.17235244076332146
+              ],
+              "2022": [
+                -0.012721497944672366,
+                -0.1864640596823247
+              ]
+            }
+          },
+          "score": 7.9448
+        },
+        {
+          "params": {
+            "min_hold_days": 5,
+            "signal_ema": 5,
+            "defensive": [
+              "GLD",
+              "TLT",
+              "BIL"
+            ],
+            "vol_window": 20,
+            "vol_cap": 1.0,
+            "vol_floor": 0.5,
+            "regime_sma": 0,
+            "lookback": 252,
+            "top_n": 3,
+            "weighting": "equal",
+            "vol_target": 0.25
+          },
+          "metrics": {
+            "cagr": 0.1355,
+            "mdd": -0.2444,
+            "sharpe": 0.718,
+            "ann_turn": 4.46,
+            "ann_fric": 0.0045,
+            "spy_cagr": 0.1049,
+            "spy_mdd": -0.5519,
+            "edge": 0.0306,
+            "final_val": 11.1754,
+            "crisis": {
+              "2008": [
+                -0.011089702318949568,
+                -0.36236759856381406
+              ],
+              "2020": [
+                0.4240118228342058,
+                0.17235244076332146
+              ],
+              "2022": [
+                -0.028399438644822528,
+                -0.1864640596823247
+              ]
+            }
+          },
+          "score": 7.9187
+        },
+        {
+          "params": {
+            "min_hold_days": 0,
+            "signal_ema": 10,
+            "defensive": [
+              "GLD",
+              "TLT"
+            ],
+            "vol_window": 20,
+            "vol_cap": 1.0,
+            "vol_floor": 0.5,
+            "regime_sma": 0,
+            "lookback": 252,
+            "top_n": 3,
+            "weighting": "equal",
+            "vol_target": 0.2
+          },
+          "metrics": {
+            "cagr": 0.1332,
+            "mdd": -0.283,
+            "sharpe": 0.719,
+            "ann_turn": 5.42,
+            "ann_fric": 0.0054,
+            "spy_cagr": 0.1049,
+            "spy_mdd": -0.5519,
+            "edge": 0.0283,
+            "final_val": 10.7386,
+            "crisis": {
+              "2008": [
+                -0.05273465718360093,
+                -0.36236759856381406
+              ],
+              "2020": [
+                0.41656410561202195,
+                0.17235244076332146
+              ],
+              "2022": [
+                -0.010053713882417603,
+                -0.1864640596823247
+              ]
+            }
+          },
+          "score": 7.9126
+        },
+        {
+          "params": {
+            "min_hold_days": 5,
+            "signal_ema": 5,
+            "defensive": [
+              "GLD",
+              "TLT",
+              "BIL"
+            ],
+            "vol_window": 20,
+            "vol_cap": 1.0,
+            "vol_floor": 0.5,
+            "regime_sma": 0,
+            "lookback": 252,
+            "top_n": 3,
+            "weighting": "equal",
+            "vol_target": 0.2
+          },
+          "metrics": {
+            "cagr": 0.131,
+            "mdd": -0.2341,
+            "sharpe": 0.717,
+            "ann_turn": 4.71,
+            "ann_fric": 0.0047,
+            "spy_cagr": 0.1049,
+            "spy_mdd": -0.5519,
+            "edge": 0.0261,
+            "final_val": 10.3561,
+            "crisis": {
+              "2008": [
+                -0.03548744018262462,
+                -0.36236759856381406
+              ],
+              "2020": [
+                0.3686253458336761,
+                0.17235244076332146
+              ],
+              "2022": [
+                -0.02281186256432377,
+                -0.1864640596823247
+              ]
+            }
+          },
+          "score": 7.8772
+        },
+        {
+          "params": {
+            "min_hold_days": 3,
+            "signal_ema": 10,
+            "defensive": [
+              "GLD"
+            ],
+            "vol_window": 20,
+            "vol_cap": 1.0,
+            "vol_floor": 0.5,
+            "regime_sma": 0,
+            "lookback": 252,
+            "top_n": 3,
+            "weighting": "equal",
+            "vol_target": 0.2
+          },
+          "metrics": {
+            "cagr": 0.141,
+            "mdd": -0.2857,
+            "sharpe": 0.709,
+            "ann_turn": 4.43,
+            "ann_fric": 0.0044,
+            "spy_cagr": 0.1049,
+            "spy_mdd": -0.5519,
+            "edge": 0.0361,
+            "final_val": 12.2367,
+            "crisis": {
+              "2008": [
+                -0.0817946869400592,
+                -0.36236759856381406
+              ],
+              "2020": [
+                0.3907064754518381,
+                0.17235244076332146
+              ],
+              "2022": [
+                -0.016164368518121308,
+                -0.1864640596823247
+              ]
+            }
+          },
+          "score": 7.8671999999999995
+        },
+        {
+          "params": {
+            "min_hold_days": 0,
+            "signal_ema": 10,
+            "defensive": [
+              "GLD"
+            ],
+            "vol_window": 20,
+            "vol_cap": 1.0,
+            "vol_floor": 0.5,
+            "regime_sma": 0,
+            "lookback": 252,
+            "top_n": 3,
+            "weighting": "equal",
+            "vol_target": 0.25
+          },
+          "metrics": {
+            "cagr": 0.1429,
+            "mdd": -0.2968,
+            "sharpe": 0.707,
+            "ann_turn": 4.93,
+            "ann_fric": 0.0049,
+            "spy_cagr": 0.1049,
+            "spy_mdd": -0.5519,
+            "edge": 0.038,
+            "final_val": 12.6359,
+            "crisis": {
+              "2008": [
+                -0.0926363609489591,
+                -0.36236759856381406
+              ],
+              "2020": [
+                0.4565762997919325,
+                0.17235244076332146
+              ],
+              "2022": [
+                -0.022469054850317804,
+                -0.1864640596823247
+              ]
+            }
+          },
+          "score": 7.860499999999999
+        }
+      ]
+    },
+    "gen3": {
+      "diagnostic": {
+        "top5_cagr": 0.1343,
+        "bot5_cagr": 0.1018,
+        "top5_turn": 5.27,
+        "bot5_turn": 9.59,
+        "top5_fric": 0.0053,
+        "bot5_fric": 0.0096,
+        "whipsaw_count": 0,
+        "fric_bleed_count": 0,
+        "def_lag_count": 0,
+        "primary_issue": "WEAK_SIGNAL \u2014 lookback or weighting not capturing real momentum"
+      },
+      "top10": [
+        {
+          "params": {
+            "min_hold_days": 3,
+            "signal_ema": 10,
+            "defensive": [
+              "GLD",
+              "TLT"
+            ],
+            "vol_window": 30,
+            "vol_cap": 1.0,
+            "vol_floor": 0.5,
+            "regime_sma": 0,
+            "lookback": 252,
+            "top_n": 3,
+            "weighting": "return_prop",
+            "vol_target": 0.15
+          },
+          "metrics": {
+            "cagr": 0.1383,
+            "mdd": -0.2629,
+            "sharpe": 0.748,
+            "ann_turn": 4.45,
+            "ann_fric": 0.0044,
+            "spy_cagr": 0.1049,
+            "spy_mdd": -0.5519,
+            "edge": 0.0334,
+            "final_val": 11.7089,
+            "crisis": {
+              "2008": [
+                -0.006995990268314989,
+                -0.36236759856381406
+              ],
+              "2020": [
+                0.3398667987385957,
+                0.17235244076332146
+              ],
+              "2022": [
+                0.05390929300343439,
+                -0.1864640596823247
+              ]
+            }
+          },
+          "score": 8.2383
+        },
+        {
+          "params": {
+            "min_hold_days": 1,
+            "signal_ema": 10,
+            "defensive": [
+              "GLD",
+              "TLT",
+              "BIL"
+            ],
+            "vol_window": 30,
+            "vol_cap": 2.0,
+            "vol_floor": 0.5,
+            "regime_sma": 0,
+            "lookback": 252,
+            "top_n": 3,
+            "weighting": "return_prop",
+            "vol_target": 0.15
+          },
+          "metrics": {
+            "cagr": 0.132,
+            "mdd": -0.2488,
+            "sharpe": 0.736,
+            "ann_turn": 4.89,
+            "ann_fric": 0.0049,
+            "spy_cagr": 0.1049,
+            "spy_mdd": -0.5519,
+            "edge": 0.0271,
+            "final_val": 10.5313,
+            "crisis": {
+              "2008": [
+                -0.06365316320185777,
+                -0.36236759856381406
+              ],
+              "2020": [
+                0.3315452435144015,
+                0.17235244076332146
+              ],
+              "2022": [
+                0.06455797949222686,
+                -0.1864640596823247
+              ]
+            }
+          },
+          "score": 8.0742
+        },
+        {
+          "params": {
+            "min_hold_days": 3,
+            "signal_ema": 10,
+            "defensive": [
+              "GLD",
+              "TLT"
+            ],
+            "vol_window": 10,
+            "vol_cap": 2.0,
+            "vol_floor": 0.5,
+            "regime_sma": 0,
+            "lookback": 252,
+            "top_n": 3,
+            "weighting": "return_prop",
+            "vol_target": 0.15
+          },
+          "metrics": {
+            "cagr": 0.1342,
+            "mdd": -0.2578,
+            "sharpe": 0.732,
+            "ann_turn": 6.06,
+            "ann_fric": 0.0061,
+            "spy_cagr": 0.1049,
+            "spy_mdd": -0.5519,
+            "edge": 0.0293,
+            "final_val": 10.9298,
+            "crisis": {
+              "2008": [
+                -0.026621118215306994,
+                -0.36236759856381406
+              ],
+              "2020": [
+                0.3666169672679722,
+                0.17235244076332146
+              ],
+              "2022": [
+                0.07797523481269719,
+                -0.1864640596823247
+              ]
+            }
+          },
+          "score": 8.0496
+        },
+        {
+          "params": {
+            "min_hold_days": 3,
+            "signal_ema": 5,
+            "defensive": [
+              "GLD",
+              "TLT"
+            ],
+            "vol_window": 30,
+            "vol_cap": 1.0,
+            "vol_floor": 0.5,
+            "regime_sma": 0,
+            "lookback": 252,
+            "top_n": 3,
+            "weighting": "return_prop",
+            "vol_target": 0.15
+          },
+          "metrics": {
+            "cagr": 0.1337,
+            "mdd": -0.254,
+            "sharpe": 0.729,
+            "ann_turn": 5.28,
+            "ann_fric": 0.0053,
+            "spy_cagr": 0.1049,
+            "spy_mdd": -0.5519,
+            "edge": 0.0288,
+            "final_val": 10.8337,
+            "crisis": {
+              "2008": [
+                -0.011845896852241355,
+                -0.36236759856381406
+              ],
+              "2020": [
+                0.3147554553781431,
+                0.17235244076332146
+              ],
+              "2022": [
+                0.048153926012018955,
+                -0.1864640596823247
+              ]
+            }
+          },
+          "score": 8.0161
+        },
+        {
+          "params": {
+            "min_hold_days": 3,
+            "signal_ema": 5,
+            "defensive": [
+              "GLD",
+              "TLT"
+            ],
+            "vol_window": 20,
+            "vol_cap": 2.0,
+            "vol_floor": 0.5,
+            "regime_sma": 0,
+            "lookback": 252,
+            "top_n": 3,
+            "weighting": "return_prop",
+            "vol_target": 0.15
+          },
+          "metrics": {
+            "cagr": 0.1333,
+            "mdd": -0.2527,
+            "sharpe": 0.729,
+            "ann_turn": 5.68,
+            "ann_fric": 0.0057,
+            "spy_cagr": 0.1049,
+            "spy_mdd": -0.5519,
+            "edge": 0.0284,
+            "final_val": 10.7651,
+            "crisis": {
+              "2008": [
+                -0.02337048949499232,
+                -0.36236759856381406
+              ],
+              "2020": [
+                0.3206634143886311,
+                0.17235244076332146
+              ],
+              "2022": [
+                0.06269753376212628,
+                -0.1864640596823247
+              ]
+            }
+          },
+          "score": 8.013300000000001
+        },
+        {
+          "params": {
+            "min_hold_days": 1,
+            "signal_ema": 10,
+            "defensive": [
+              "GLD",
+              "TLT",
+              "BIL"
+            ],
+            "vol_window": 20,
+            "vol_cap": 1.0,
+            "vol_floor": 0.5,
+            "regime_sma": 0,
+            "lookback": 252,
+            "top_n": 3,
+            "weighting": "return_prop",
+            "vol_target": 0.15
+          },
+          "metrics": {
+            "cagr": 0.13,
+            "mdd": -0.2486,
+            "sharpe": 0.729,
+            "ann_turn": 5.44,
+            "ann_fric": 0.0054,
+            "spy_cagr": 0.1049,
+            "spy_mdd": -0.5519,
+            "edge": 0.0251,
+            "final_val": 10.1846,
+            "crisis": {
+              "2008": [
+                -0.0861138236226241,
+                -0.36236759856381406
+              ],
+              "2020": [
+                0.3365003503674009,
+                0.17235244076332146
+              ],
+              "2022": [
+                0.08790515176907543,
+                -0.1864640596823247
+              ]
+            }
+          },
+          "score": 7.990200000000001
+        },
+        {
+          "params": {
+            "min_hold_days": 1,
+            "signal_ema": 10,
+            "defensive": [
+              "GLD",
+              "TLT",
+              "BIL"
+            ],
+            "vol_window": 20,
+            "vol_cap": 2.0,
+            "vol_floor": 0.5,
+            "regime_sma": 0,
+            "lookback": 252,
+            "top_n": 3,
+            "weighting": "return_prop",
+            "vol_target": 0.15
+          },
+          "metrics": {
+            "cagr": 0.13,
+            "mdd": -0.2486,
+            "sharpe": 0.729,
+            "ann_turn": 5.44,
+            "ann_fric": 0.0054,
+            "spy_cagr": 0.1049,
+            "spy_mdd": -0.5519,
+            "edge": 0.0251,
+            "final_val": 10.1827,
+            "crisis": {
+              "2008": [
+                -0.0861138236226241,
+                -0.36236759856381406
+              ],
+              "2020": [
+                0.33650035036740067,
+                0.17235244076332146
+              ],
+              "2022": [
+                0.08790515176907521,
+                -0.1864640596823247
+              ]
+            }
+          },
+          "score": 7.990200000000001
+        },
+        {
+          "params": {
+            "min_hold_days": 1,
+            "signal_ema": 10,
+            "defensive": [
+              "GLD",
+              "TLT",
+              "BIL"
+            ],
+            "vol_window": 60,
+            "vol_cap": 1.5,
+            "vol_floor": 0.5,
+            "regime_sma": 200,
+            "lookback": 252,
+            "top_n": 3,
+            "weighting": "return_prop",
+            "vol_target": 0.15
+          },
+          "metrics": {
+            "cagr": 0.1198,
+            "mdd": -0.2011,
+            "sharpe": 0.736,
+            "ann_turn": 7.18,
+            "ann_fric": 0.0072,
+            "spy_cagr": 0.1049,
+            "spy_mdd": -0.5519,
+            "edge": 0.0149,
+            "final_val": 8.577,
+            "crisis": {
+              "2008": [
+                0.09816318673563496,
+                -0.36236759856381406
+              ],
+              "2020": [
+                0.26880578376572917,
+                0.17235244076332146
+              ],
+              "2022": [
+                -0.07216483826541487,
+                -0.1864640596823247
+              ]
+            }
+          },
+          "score": 7.9887999999999995
+        },
+        {
+          "params": {
+            "min_hold_days": 1,
+            "signal_ema": 10,
+            "defensive": [
+              "GLD",
+              "TLT",
+              "BIL"
+            ],
+            "vol_window": 60,
+            "vol_cap": 2.0,
+            "vol_floor": 0.5,
+            "regime_sma": 200,
+            "lookback": 252,
+            "top_n": 3,
+            "weighting": "return_prop",
+            "vol_target": 0.15
+          },
+          "metrics": {
+            "cagr": 0.1198,
+            "mdd": -0.2011,
+            "sharpe": 0.736,
+            "ann_turn": 7.18,
+            "ann_fric": 0.0072,
+            "spy_cagr": 0.1049,
+            "spy_mdd": -0.5519,
+            "edge": 0.0149,
+            "final_val": 8.577,
+            "crisis": {
+              "2008": [
+                0.09816318673563496,
+                -0.36236759856381406
+              ],
+              "2020": [
+                0.26880578376572917,
+                0.17235244076332146
+              ],
+              "2022": [
+                -0.07216483826541487,
+                -0.1864640596823247
+              ]
+            }
+          },
+          "score": 7.9887999999999995
+        },
+        {
+          "params": {
+            "min_hold_days": 1,
+            "signal_ema": 10,
+            "defensive": [
+              "GLD",
+              "TLT",
+              "BIL"
+            ],
+            "vol_window": 30,
+            "vol_cap": 2.0,
+            "vol_floor": 0.5,
+            "regime_sma": 200,
+            "lookback": 252,
+            "top_n": 3,
+            "weighting": "return_prop",
+            "vol_target": 0.15
+          },
+          "metrics": {
+            "cagr": 0.1184,
+            "mdd": -0.2009,
+            "sharpe": 0.734,
+            "ann_turn": 7.39,
+            "ann_fric": 0.0074,
+            "spy_cagr": 0.1049,
+            "spy_mdd": -0.5519,
+            "edge": 0.0135,
+            "final_val": 8.3737,
+            "crisis": {
+              "2008": [
+                0.08828595164865027,
+                -0.36236759856381406
+              ],
+              "2020": [
+                0.3026173130203975,
+                0.17235244076332146
+              ],
+              "2022": [
+                -0.07784082077991394,
+                -0.1864640596823247
+              ]
+            }
+          },
+          "score": 7.9590000000000005
+        }
+      ]
+    },
+    "gen4": {
+      "diagnostic": {
+        "top5_cagr": 0.1412,
+        "bot5_cagr": 0.1221,
+        "top5_turn": 5.22,
+        "bot5_turn": 4.49,
+        "top5_fric": 0.0052,
+        "bot5_fric": 0.0045,
+        "whipsaw_count": 0,
+        "fric_bleed_count": 0,
+        "def_lag_count": 0,
+        "primary_issue": "WEAK_SIGNAL \u2014 lookback or weighting not capturing real momentum"
+      },
+      "top10": [
+        {
+          "params": {
+            "min_hold_days": 3,
+            "signal_ema": 9,
+            "defensive": [
+              "GLD",
+              "TLT"
+            ],
+            "vol_window": 25,
+            "vol_cap": 1.0,
+            "vol_floor": 0.5,
+            "regime_sma": 0,
+            "lookback": 232,
+            "top_n": 3,
+            "weighting": "return_prop",
+            "vol_target": 0.12
+          },
+          "metrics": {
+            "cagr": 0.1406,
+            "mdd": -0.2304,
+            "sharpe": 0.832,
+            "ann_turn": 5.19,
+            "ann_fric": 0.0052,
+            "spy_cagr": 0.1049,
+            "spy_mdd": -0.5519,
+            "edge": 0.0358,
+            "final_val": 12.1702,
+            "crisis": {
+              "2008": [
+                0.07760992017570634,
+                -0.36236759856381406
+              ],
+              "2020": [
+                0.2418878323562308,
+                0.17235244076332146
+              ],
+              "2022": [
+                -0.0041531710288796875,
+                -0.1864640596823247
+              ]
+            }
+          },
+          "score": 9.0946
+        },
+        {
+          "params": {
+            "min_hold_days": 2,
+            "signal_ema": 9,
+            "defensive": [
+              "GLD",
+              "TLT"
+            ],
+            "vol_window": 30,
+            "vol_cap": 1.0,
+            "vol_floor": 0.5,
+            "regime_sma": 0,
+            "lookback": 232,
+            "top_n": 3,
+            "weighting": "return_prop",
+            "vol_target": 0.12
+          },
+          "metrics": {
+            "cagr": 0.1399,
+            "mdd": -0.2294,
+            "sharpe": 0.83,
+            "ann_turn": 5.3,
+            "ann_fric": 0.0053,
+            "spy_cagr": 0.1049,
+            "spy_mdd": -0.5519,
+            "edge": 0.0351,
+            "final_val": 12.0292,
+            "crisis": {
+              "2008": [
+                0.07549763655900987,
+                -0.36236759856381406
+              ],
+              "2020": [
+                0.2855802561700753,
+                0.17235244076332146
+              ],
+              "2022": [
+                -0.027741644034808943,
+                -0.1864640596823247
+              ]
+            }
+          },
+          "score": 9.0697
+        },
+        {
+          "params": {
+            "min_hold_days": 2,
+            "signal_ema": 10,
+            "defensive": [
+              "GLD",
+              "TLT"
+            ],
+            "vol_window": 40,
+            "vol_cap": 1.0,
+            "vol_floor": 0.5,
+            "regime_sma": 0,
+            "lookback": 232,
+            "top_n": 3,
+            "weighting": "return_prop",
+            "vol_target": 0.12
+          },
+          "metrics": {
+            "cagr": 0.1381,
+            "mdd": -0.2341,
+            "sharpe": 0.816,
+            "ann_turn": 4.96,
+            "ann_fric": 0.005,
+            "spy_cagr": 0.1049,
+            "spy_mdd": -0.5519,
+            "edge": 0.0332,
+            "final_val": 11.6557,
+            "crisis": {
+              "2008": [
+                0.07788810654409173,
+                -0.36236759856381406
+              ],
+              "2020": [
+                0.254512098017611,
+                0.17235244076332146
+              ],
+              "2022": [
+                -0.030125335118575736,
+                -0.1864640596823247
+              ]
+            }
+          },
+          "score": 8.9169
+        },
+        {
+          "params": {
+            "min_hold_days": 2,
+            "signal_ema": 9,
+            "defensive": [
+              "GLD",
+              "TLT"
+            ],
+            "vol_window": 25,
+            "vol_cap": 1.0,
+            "vol_floor": 0.5,
+            "regime_sma": 0,
+            "lookback": 232,
+            "top_n": 3,
+            "weighting": "return_prop",
+            "vol_target": 0.12
+          },
+          "metrics": {
+            "cagr": 0.1367,
+            "mdd": -0.2248,
+            "sharpe": 0.816,
+            "ann_turn": 5.58,
+            "ann_fric": 0.0056,
+            "spy_cagr": 0.1049,
+            "spy_mdd": -0.5519,
+            "edge": 0.0318,
+            "final_val": 11.4021,
+            "crisis": {
+              "2008": [
+                0.06296260790286401,
+                -0.36236759856381406
+              ],
+              "2020": [
+                0.27411632590291624,
+                0.17235244076332146
+              ],
+              "2022": [
+                -0.01818598930913462,
+                -0.1864640596823247
+              ]
+            }
+          },
+          "score": 8.9071
+        },
+        {
+          "params": {
+            "min_hold_days": 2,
+            "signal_ema": 10,
+            "defensive": [
+              "GLD",
+              "TLT"
+            ],
+            "vol_window": 30,
+            "vol_cap": 1.0,
+            "vol_floor": 0.5,
+            "regime_sma": 0,
+            "lookback": 232,
+            "top_n": 3,
+            "weighting": "return_prop",
+            "vol_target": 0.18
+          },
+          "metrics": {
+            "cagr": 0.1505,
+            "mdd": -0.2501,
+            "sharpe": 0.785,
+            "ann_turn": 5.07,
+            "ann_fric": 0.0051,
+            "spy_cagr": 0.1049,
+            "spy_mdd": -0.5519,
+            "edge": 0.0456,
+            "final_val": 14.321,
+            "crisis": {
+              "2008": [
+                0.017469018646269374,
+                -0.36236759856381406
+              ],
+              "2020": [
+                0.3354404582791468,
+                0.17235244076332146
+              ],
+              "2022": [
+                0.05003475788852785,
+                -0.1864640596823247
+              ]
+            }
+          },
+          "score": 8.693700000000002
+        },
+        {
+          "params": {
+            "min_hold_days": 4,
+            "signal_ema": 12,
+            "defensive": [
+              "GLD",
+              "TLT"
+            ],
+            "vol_window": 40,
+            "vol_cap": 1.0,
+            "vol_floor": 0.5,
+            "regime_sma": 0,
+            "lookback": 232,
+            "top_n": 3,
+            "weighting": "return_prop",
+            "vol_target": 0.18
+          },
+          "metrics": {
+            "cagr": 0.1519,
+            "mdd": -0.2475,
+            "sharpe": 0.784,
+            "ann_turn": 4.22,
+            "ann_fric": 0.0042,
+            "spy_cagr": 0.1049,
+            "spy_mdd": -0.5519,
+            "edge": 0.047,
+            "final_val": 14.6602,
+            "crisis": {
+              "2008": [
+                0.027954117771698872,
+                -0.36236759856381406
+              ],
+              "2020": [
+                0.35471706998691976,
+                0.17235244076332146
+              ],
+              "2022": [
+                0.06742883308950987,
+                -0.1864640596823247
+              ]
+            }
+          },
+          "score": 8.693499999999998
+        },
+        {
+          "params": {
+            "min_hold_days": 4,
+            "signal_ema": 12,
+            "defensive": [
+              "GLD",
+              "TLT"
+            ],
+            "vol_window": 25,
+            "vol_cap": 1.0,
+            "vol_floor": 0.5,
+            "regime_sma": 0,
+            "lookback": 232,
+            "top_n": 3,
+            "weighting": "return_prop",
+            "vol_target": 0.18
+          },
+          "metrics": {
+            "cagr": 0.1499,
+            "mdd": -0.2502,
+            "sharpe": 0.774,
+            "ann_turn": 4.43,
+            "ann_fric": 0.0044,
+            "spy_cagr": 0.1049,
+            "spy_mdd": -0.5519,
+            "edge": 0.045,
+            "final_val": 14.1838,
+            "crisis": {
+              "2008": [
+                -0.009156431392249753,
+                -0.36236759856381406
+              ],
+              "2020": [
+                0.36784660386907686,
+                0.17235244076332146
+              ],
+              "2022": [
+                0.07432381689874656,
+                -0.1864640596823247
+              ]
+            }
+          },
+          "score": 8.5795
+        },
+        {
+          "params": {
+            "min_hold_days": 2,
+            "signal_ema": 10,
+            "defensive": [
+              "GLD",
+              "TLT"
+            ],
+            "vol_window": 25,
+            "vol_cap": 1.0,
+            "vol_floor": 0.5,
+            "regime_sma": 0,
+            "lookback": 232,
+            "top_n": 3,
+            "weighting": "return_prop",
+            "vol_target": 0.18
+          },
+          "metrics": {
+            "cagr": 0.1462,
+            "mdd": -0.2474,
+            "sharpe": 0.765,
+            "ann_turn": 5.2,
+            "ann_fric": 0.0052,
+            "spy_cagr": 0.1049,
+            "spy_mdd": -0.5519,
+            "edge": 0.0413,
+            "final_val": 13.3359,
+            "crisis": {
+              "2008": [
+                -0.005207465335646977,
+                -0.36236759856381406
+              ],
+              "2020": [
+                0.30331416891895,
+                0.17235244076332146
+              ],
+              "2022": [
+                0.0544430305914152,
+                -0.1864640596823247
+              ]
+            }
+          },
+          "score": 8.4636
+        },
+        {
+          "params": {
+            "min_hold_days": 4,
+            "signal_ema": 9,
+            "defensive": [
+              "GLD",
+              "TLT"
+            ],
+            "vol_window": 40,
+            "vol_cap": 1.0,
+            "vol_floor": 0.5,
+            "regime_sma": 0,
+            "lookback": 242,
+            "top_n": 3,
+            "weighting": "return_prop",
+            "vol_target": 0.12
+          },
+          "metrics": {
+            "cagr": 0.1325,
+            "mdd": -0.2365,
+            "sharpe": 0.772,
+            "ann_turn": 4.3,
+            "ann_fric": 0.0043,
+            "spy_cagr": 0.1049,
+            "spy_mdd": -0.5519,
+            "edge": 0.0276,
+            "final_val": 10.6229,
+            "crisis": {
+              "2008": [
+                0.028002814361846262,
+                -0.36236759856381406
+              ],
+              "2020": [
+                0.315863475030582,
+                0.17235244076332146
+              ],
+              "2022": [
+                -0.03041867421596145,
+                -0.1864640596823247
+              ]
+            }
+          },
+          "score": 8.4377
+        },
+        {
+          "params": {
+            "min_hold_days": 3,
+            "signal_ema": 9,
+            "defensive": [
+              "GLD",
+              "TLT"
+            ],
+            "vol_window": 30,
+            "vol_cap": 1.0,
+            "vol_floor": 0.5,
+            "regime_sma": 0,
+            "lookback": 242,
+            "top_n": 3,
+            "weighting": "return_prop",
+            "vol_target": 0.12
+          },
+          "metrics": {
+            "cagr": 0.1316,
+            "mdd": -0.2282,
+            "sharpe": 0.772,
+            "ann_turn": 4.8,
+            "ann_fric": 0.0048,
+            "spy_cagr": 0.1049,
+            "spy_mdd": -0.5519,
+            "edge": 0.0267,
+            "final_val": 10.4629,
+            "crisis": {
+              "2008": [
+                0.03792666650817922,
+                -0.36236759856381406
+              ],
+              "2020": [
+                0.30194244073229215,
+                0.17235244076332146
+              ],
+              "2022": [
+                -0.02057531053277517,
+                -0.1864640596823247
+              ]
+            }
+          },
+          "score": 8.4314
+        }
+      ]
+    }
+  }
+}

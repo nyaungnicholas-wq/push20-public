@@ -1,0 +1,10 @@
+{
+  "stress3": {
+    "mc_median_cagr": 0.1986414983759477,
+    "mc_p_beat_spy": 0.982,
+    "mc_p_mdd40": 0.634,
+    "roll_beat": "199/210",
+    "longest_uw_days": 346,
+    "pct_underwater": 0.8950845152516029
+  }
+}

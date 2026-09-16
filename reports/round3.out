@@ -1,0 +1,19 @@
+ROUND 3 champion obj=+0.876 CAGR=+13.0% MDD=-31.1% WFtest=+17.2%
+Iter 30 vt_0.08          obj +0.866 CAGR +12.5% MDD -29.5% WFtest +15.6% -> REVERT
+Iter 31 vt_0.09          obj +0.869 CAGR +12.7% MDD -30.3% WFtest +16.4% -> REVERT
+Iter 32 vt_0.11          obj +0.876 CAGR +13.2% MDD -32.0% WFtest +17.9% -> REVERT
+Iter 33 vt_0.13          obj +0.869 CAGR +13.5% MDD -33.6% WFtest +18.8% -> REVERT
+Iter 34 volwin_30        obj +0.877 CAGR +13.1% MDD -31.6% WFtest +17.3% -> KEEP
+Iter 35 volwin_40        obj +0.861 CAGR +12.9% MDD -31.6% WFtest +16.8% -> REVERT
+Iter 36 volwin_60        obj +0.827 CAGR +12.5% MDD -30.8% WFtest +15.4% -> REVERT
+Iter 37 volwin_10        obj +0.854 CAGR +12.8% MDD -31.2% WFtest +16.6% -> REVERT
+Iter 38 lb_189           obj +0.769 CAGR +11.6% MDD -32.2% WFtest +13.9% -> REVERT
+Iter 39 lb_210           obj +0.899 CAGR +13.4% MDD -29.9% WFtest +15.8% -> REVERT
+Iter 40 lb_126_252       obj +0.824 CAGR +12.4% MDD -31.5% WFtest +15.5% -> REVERT
+Iter 41 floor_0.20       obj +0.874 CAGR +13.0% MDD -31.4% WFtest +17.2% -> REVERT
+Iter 42 floor_0.10       obj +0.878 CAGR +13.1% MDD -31.7% WFtest +17.3% -> KEEP
+Iter 43 no_abs_mom       obj +0.879 CAGR +13.0% MDD -31.5% WFtest +17.4% -> KEEP
+Iter 44 top4_vt          obj +0.854 CAGR +12.4% MDD -31.5% WFtest +15.8% -> REVERT
+
+ROUND 3 done. Champion promoted: True. Flags: {'rotation_momentum_weight': True, 'rotation_defensive_symbol': 'GLD', 'lookbacks': (252,), 'rotation_vol_target': 0.1, 'rotation_vol_window': 30, 'rotation_weight_floor': 0.1, 'rotation_abs_momentum': False}
+  2005-2024 obj +0.879 CAGR +13.0% MDD -31.5%

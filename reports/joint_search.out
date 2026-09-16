@@ -1,0 +1,36 @@
+CHAMPION (GLD+TLT blend):
+  train CAGR  +9.9%  MDD -22.5%  Sharpe 0.76  obj +0.808  (SPY +7.5%)
+  test  CAGR +14.8%  MDD -22.0%  Sharpe 0.93  obj +0.935  (SPY +14.7%)
+  full  CAGR +11.9%  MDD -22.5%  Sharpe 0.83  obj +0.865  (SPY +10.3%)
+  ...evaluated 20 configs
+  ...evaluated 40 configs
+  ...evaluated 60 configs
+  ...evaluated 80 configs
+  ...evaluated 100 configs
+
+======================================================================
+WALK-FORWARD (select on TRAIN 2005-2016 → report untouched TEST 2017-2024):
+  picked: lb=(231,) top=2 wt=invvol rank=mom vt=0.1 def=GLD+TLT clu=0 trd=0
+  TEST  CAGR +14.0%  MDD -22.5%  Sharpe 0.89  obj +0.878
+  vs CHAMPION TEST obj +0.935, Sharpe 0.93
+  --> does NOT beat the champion out-of-sample — plateau confirmed
+
+TOP 8 by TEST objective (optimistic ceiling — selection-on-test):
+  obj +1.031  CAGR +17.2%  MDD -25.1%  Sharpe 0.98 | lb=(231,) top=2 wt=sharpe rank=mom vt=0.1 def=GLD clu=0 trd=0 *BEATS champ*
+  obj +1.026  CAGR +16.7%  MDD -24.9%  Sharpe 0.98 | lb=(231,) top=3 wt=rp_blend rank=mom vt=0.12 def=GLD clu=0 trd=0 *BEATS champ*
+  obj +1.011  CAGR +17.0%  MDD -27.1%  Sharpe 0.96 | lb=(252,) top=3 wt=rp_blend rank=mom vt=0.15 def=GLD+TLT clu=0 trd=0 *BEATS champ*
+  obj +0.994  CAGR +15.4%  MDD -25.1%  Sharpe 0.98 | lb=(252,) top=5 wt=rp_blend rank=sharpe vt=0.15 def=GLD clu=0 trd=0 *BEATS champ*
+  obj +0.976  CAGR +16.1%  MDD -25.1%  Sharpe 0.95 | lb=(63, 126, 252) top=4 wt=momentum rank=sharpe vt=0.15 def=GLD clu=0 trd=0 *BEATS champ*
+  obj +0.976  CAGR +14.7%  MDD -24.0%  Sharpe 0.97 | lb=(252,) top=5 wt=sharpe rank=sharpe vt=0.12 def=GLD clu=0 trd=0 *BEATS champ*
+  obj +0.971  CAGR +15.1%  MDD -25.5%  Sharpe 0.96 | lb=(126, 252) top=5 wt=rp_blend rank=mom vt=0.12 def=GLD clu=0 trd=0 *BEATS champ*
+  obj +0.965  CAGR +17.0%  MDD -29.3%  Sharpe 0.92 | lb=(126, 252) top=5 wt=sharpe rank=sharpe vt=0.0 def=GLD clu=0 trd=0 *BEATS champ*
+
+TOP 6 by FULL 2005-2024 objective:
+  obj +0.938  CAGR +14.2%  MDD -30.1%  Sharpe 0.86 | lb=(231,) top=2 wt=sharpe rank=mom vt=0.1 def=GLD clu=0 trd=0
+  obj +0.917  CAGR +13.6%  MDD -29.9%  Sharpe 0.85 | lb=(231,) top=3 wt=rp_blend rank=mom vt=0.12 def=GLD clu=0 trd=0
+  obj +0.916  CAGR +12.5%  MDD -22.5%  Sharpe 0.87 | lb=(231,) top=2 wt=invvol rank=mom vt=0.1 def=GLD+TLT clu=0 trd=0
+  obj +0.858  CAGR +12.3%  MDD -26.5%  Sharpe 0.82 | lb=(231,) top=2 wt=momentum rank=mom vt=0.1 def=TLT clu=0 trd=0
+  obj +0.831  CAGR +11.9%  MDD -32.2%  Sharpe 0.80 | lb=(126, 252) top=5 wt=rp_blend rank=mom vt=0.12 def=GLD clu=0 trd=0
+  obj +0.828  CAGR +12.4%  MDD -33.8%  Sharpe 0.79 | lb=(63, 126, 252) top=4 wt=momentum rank=sharpe vt=0.15 def=GLD clu=0 trd=0
+
+110 configs evaluated. Saved → reports/joint_search_results.json

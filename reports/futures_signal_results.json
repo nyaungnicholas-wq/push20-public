@@ -1,0 +1,56 @@
+{
+ "corr_same_day": 0.9789936058387446,
+ "corr_lead": -0.10204782749898869,
+ "results": {
+  "baseline (no futures input)": {
+   "full_06_24": {
+    "cagr": 0.2068,
+    "mdd": -0.304,
+    "calmar": 0.68,
+    "sharpe": 0.908
+   },
+   "full_06_now_cagr": 0.2079,
+   "gated_days": 0
+  },
+  "ES < 50d SMA -> no leverage": {
+   "full_06_24": {
+    "cagr": 0.1845,
+    "mdd": -0.2885,
+    "calmar": 0.64,
+    "sharpe": 0.86
+   },
+   "full_06_now_cagr": 0.187,
+   "gated_days": 1818
+  },
+  "ES 20d momentum < 0 -> no leverage": {
+   "full_06_24": {
+    "cagr": 0.1869,
+    "mdd": -0.2827,
+    "calmar": 0.661,
+    "sharpe": 0.882
+   },
+   "full_06_now_cagr": 0.1919,
+   "gated_days": 2004
+  },
+  "ES overnight panic (-1.5%) -> no lev next day": {
+   "full_06_24": {
+    "cagr": 0.1959,
+    "mdd": -0.304,
+    "calmar": 0.645,
+    "sharpe": 0.877
+   },
+   "full_06_now_cagr": 0.1973,
+   "gated_days": 384
+  },
+  "NQ 20d momentum < 0 -> no leverage": {
+   "full_06_24": {
+    "cagr": 0.1836,
+    "mdd": -0.2827,
+    "calmar": 0.649,
+    "sharpe": 0.871
+   },
+   "full_06_now_cagr": 0.1896,
+   "gated_days": 2056
+  }
+ }
+}

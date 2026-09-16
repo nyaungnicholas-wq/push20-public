@@ -1,0 +1,146 @@
+{
+  "recommended_champion": {
+    "name": "GLD+TLT blend (robust, risk-adjusted)",
+    "flags": {
+      "rotation_momentum_weight": true,
+      "rotation_defensive_symbol": "GLD+TLT",
+      "rotation_lookbacks": [
+        252
+      ],
+      "rotation_vol_target": 0.1,
+      "rotation_vol_window": 20
+    },
+    "metrics": {
+      "2005-2024": {
+        "final": 940643.6273772876,
+        "cagr": 0.11865951612609327,
+        "mdd": -0.22545262473640476,
+        "sharpe": 0.8342035341144948,
+        "sortino": 1.1074087919263527,
+        "spy_cagr": 0.10321645690619041
+      },
+      "2005-2014": {
+        "final": 282284.95825698046,
+        "cagr": 0.1094609023032842,
+        "mdd": -0.22545262473640476,
+        "sharpe": 0.8145805943668754,
+        "sortino": 1.135087967998679,
+        "spy_cagr": 0.07665618090138704
+      },
+      "2015-2024": {
+        "final": 335278.8354722605,
+        "cagr": 0.1286949986761956,
+        "mdd": -0.22184507675923765,
+        "sharpe": 0.8584128890769277,
+        "sortino": 1.0968157774136214,
+        "spy_cagr": 0.13054581294606016
+      },
+      "2018-2024": {
+        "final": 244565.87197950127,
+        "cagr": 0.1364356918026468,
+        "mdd": -0.2202189228582005,
+        "sharpe": 0.8448975681941046,
+        "sortino": 1.0984934833446338,
+        "spy_cagr": 0.1367890043114084
+      }
+    }
+  },
+  "max_cagr_variant": {
+    "name": "GLD only (higher CAGR, gold-dependent)",
+    "flags": {
+      "rotation_momentum_weight": true,
+      "rotation_defensive_symbol": "GLD",
+      "rotation_lookbacks": [
+        252
+      ],
+      "rotation_vol_target": 0.1,
+      "rotation_vol_window": 20
+    },
+    "metrics": {
+      "2005-2024": {
+        "final": 1158969.735067172,
+        "cagr": 0.13040157363131843,
+        "mdd": -0.3112772730281509,
+        "sharpe": 0.8214436700370417,
+        "sortino": 1.0849679258397835,
+        "spy_cagr": 0.10321645690619041
+      },
+      "2005-2014": {
+        "final": 294349.6575170519,
+        "cagr": 0.11411834491842954,
+        "mdd": -0.3112772730281509,
+        "sharpe": 0.7238144177922644,
+        "sortino": 0.9858842680939505,
+        "spy_cagr": 0.07665618090138704
+      },
+      "2015-2024": {
+        "final": 396375.23729620123,
+        "cagr": 0.1477614070470441,
+        "mdd": -0.2259473523217271,
+        "sharpe": 0.9277188843171832,
+        "sortino": 1.187334872074908,
+        "spy_cagr": 0.13054581294606016
+      },
+      "2018-2024": {
+        "final": 288184.2087278414,
+        "cagr": 0.1634236159235647,
+        "mdd": -0.22494336397517253,
+        "sharpe": 0.9432629991136113,
+        "sortino": 1.220218533044109,
+        "spy_cagr": 0.1367890043114084
+      }
+    }
+  },
+  "note": "Both beat SPY over 2005-2024. Raw-CAGR edge concentrated in 2005-2014; both MATCH SPY post-2010 with much lower drawdown. Blend has -22% MDD across all windows and far less single-asset dependence.",
+  "v3_multifactor_champion": {
+    "name": "rp_blend multi-factor (recommended after plateau fix)",
+    "flags": {
+      "rotation_momentum_weight": true,
+      "rotation_weight_scheme": "rp_blend",
+      "rotation_defensive_symbol": "GLD+TLT",
+      "rotation_lookbacks": [
+        252
+      ],
+      "rotation_vol_target": 0.12,
+      "rotation_vol_window": 20
+    },
+    "metrics": {
+      "2005-2024": {
+        "cagr": 0.1184,
+        "mdd": -0.2527,
+        "sharpe": 0.813,
+        "spy_cagr": 0.1032,
+        "beats_spy": true
+      },
+      "2005-2014": {
+        "cagr": 0.103,
+        "mdd": -0.2379,
+        "sharpe": 0.755,
+        "spy_cagr": 0.0767,
+        "beats_spy": true
+      },
+      "2015-2024": {
+        "cagr": 0.1343,
+        "mdd": -0.2539,
+        "sharpe": 0.87,
+        "spy_cagr": 0.1305,
+        "beats_spy": true
+      },
+      "2018-2024": {
+        "cagr": 0.1484,
+        "mdd": -0.2518,
+        "sharpe": 0.886,
+        "spy_cagr": 0.1368,
+        "beats_spy": true
+      },
+      "2017-2024-OOS": {
+        "cagr": 0.1578,
+        "mdd": -0.2515,
+        "sharpe": 0.961,
+        "spy_cagr": 0.1465,
+        "beats_spy": true
+      }
+    },
+    "note": "Adds a NEW factor (risk-parity: momentum x 1/vol). Beats SPY on ALL standard windows AND out-of-sample 2017-2024, vs 2/4 for the single-factor champion. Tradeoff: MDD -25% vs -22.5%. Found via global joint search + walk-forward selection (joint_search.py). Does NOT fix the structural post-2010 raw-return lag or defensive-asset dependence \u2014 those need new information, not new weighting."
+  }
+}

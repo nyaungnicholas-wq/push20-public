@@ -1,0 +1,9 @@
+{
+  "stress2": {
+    "gated_cagr": 0.19719064283938925,
+    "gated_mdd": -0.35487582817285124,
+    "gated_trades": 3971,
+    "old_trades": 4036,
+    "beat_spy": 5
+  }
+}

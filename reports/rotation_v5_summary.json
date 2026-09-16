@@ -1,0 +1,53 @@
+{
+  "strategy": {
+    "starting_cash": 100000.0,
+    "final_equity": 2100140.562839876,
+    "total_return": 20.00140562839876,
+    "cagr": 0.1645245248013696,
+    "sharpe": 0.7359117016581022,
+    "sortino": 0.6758337672461011,
+    "calmar": 0.4468639646187123,
+    "max_drawdown": -0.36817586072698993,
+    "num_trades": 4287,
+    "num_closed": 2064,
+    "win_rate": 0.6371124031007752,
+    "profit_factor": 1.967470333572405,
+    "avg_rr_achieved": 1.1206351937990353
+  },
+  "v5_flags": {
+    "rotation_lookbacks": "(252,)",
+    "rotation_top_n": "3",
+    "rotation_abs_momentum": "True",
+    "rotation_weight_scheme": "momentum",
+    "rotation_momentum_weight": "False",
+    "rotation_return_prop": "False",
+    "rotation_weight_squared": "True",
+    "rotation_two_way_vol": "True",
+    "rotation_use_3x": "True",
+    "rotation_vol_target": "0.15",
+    "rotation_vol_window": "20",
+    "rotation_vol_cap": "3.0",
+    "rotation_vol_cap_bear": "1.5",
+    "rotation_vol_cap_sma": "200",
+    "rotation_vol_floor": "0.5",
+    "rotation_defensive_symbol": "GLD+TLT"
+  },
+  "universe": [
+    "XLK",
+    "XLF",
+    "XLE",
+    "XLV",
+    "XLI",
+    "XLY",
+    "XLB",
+    "XLC",
+    "SMH",
+    "QQQ"
+  ],
+  "spy_benchmark": {
+    "final_equity": 712438.4534546781,
+    "cagr": 0.10321644592242185,
+    "max_drawdown": -0.5518947039824462,
+    "total_return": 6.12438453454678
+  }
+}
