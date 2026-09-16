@@ -9,8 +9,20 @@ Both were silently wrong before 2026-09-14:
 
   - `_complete_fills` logged "top-up — sell 13 USD" BEFORE attempting the order,
     and dropped a None result (what a disconnected broker returns) without a
-    word. Four such lines were written on 2026-09-13; no order existed for any
-    of them, and the book sat off target for three days.
+    word. A failed placement was indistinguishable from a successful one.
+
+CORRECTION, 2026-09-16. An earlier version of this docstring, and the commit
+that introduced it, described those lines as a live incident on 2026-09-13 in
+which four orders were logged and none existed. That did not happen. The lines
+in data/rotation_cron.log were written by tests/test_execution_quality.py, which
+drove _complete_fills without patching _log, straight into the production log —
+the quantities match its fixture exactly. Alpaca's order history shows every
+real order filling 100%, which was the correct observation whose meaning was
+misread: there was no failed top-up because there was no top-up.
+
+The code defect was real and is still worth fixing; the incident was not. The
+underlying bug was a log that could fabricate history, now closed by the
+ROTATION_CRON_LOG override and guarded below.
 """
 import json
 import os
@@ -64,8 +76,9 @@ def test_topup_failure_is_logged_and_alerted(monkeypatch, tmp_path):
     monkeypatch.setattr(rl, "_notify", lambda t, m: alerted.append((t, m)))
 
     class DeadBroker:
-        """Connected enough to report a terminal underfill, dead for placement —
-        exactly the shape seen on 2026-09-13."""
+        """Connected enough to report a terminal underfill, dead for placement.
+        This shape is constructed here, not observed live — see the correction
+        in the module docstring."""
 
         def get_order(self, oid):
             return {"status": "expired", "filled_qty": 0}
@@ -297,3 +310,38 @@ def test_non_discord_non_ntfy_url_keeps_the_generic_envelope():
     got = _capture_webhook("https://hooks.slack.com/services/T/B/X", "t", "m", "info")
     body = json.loads(got["body"].decode())
     assert set(body) == {"title", "message", "level", "utc"}, body
+
+
+def test_tests_cannot_write_to_the_production_cron_log(tmp_path, monkeypatch):
+    """The test suite must never append to data/rotation_cron.log.
+
+    tests/test_execution_quality.py drives _complete_fills without patching
+    _log, so before 2026-09-16 every run wrote real-looking "top-up",
+    "UNDERFILL" and "Alpaca not connected" lines into the production log. Those
+    entries were later read back as evidence of a live incident on 2026-09-13
+    that never happened — the quantities matched the test fixture exactly.
+
+    trader.notify had already been given env overrides for the ledger and the
+    alert log for this same reason (commit ecbc95d). This file was missed.
+    """
+    from trader import rotation_live as rl
+
+    prod = os.path.join(ROOT, "data", "rotation_cron.log")
+    before = os.path.getsize(prod) if os.path.exists(prod) else 0
+
+    target = tmp_path / "cron.log"
+    monkeypatch.setenv("ROTATION_CRON_LOG", str(target))
+    rl._log("a line that must not reach production")
+
+    assert target.exists() and "must not reach production" in target.read_text(encoding="utf-8")
+    after = os.path.getsize(prod) if os.path.exists(prod) else 0
+    assert after == before, "a test wrote into data/rotation_cron.log"
+
+
+def test_conftest_redirects_the_cron_log_for_every_test():
+    """The redirect must be set by conftest, not left to individual tests."""
+    assert os.environ.get("ROTATION_CRON_LOG"), (
+        "conftest must set ROTATION_CRON_LOG; otherwise any test that reaches "
+        "_log writes into the production log"
+    )
+    assert "data" not in os.path.dirname(os.environ["ROTATION_CRON_LOG"]).split(os.sep)[-1:]

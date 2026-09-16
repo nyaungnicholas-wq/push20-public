@@ -16,3 +16,7 @@ import tempfile
 _TMP = tempfile.mkdtemp(prefix="stock-trader-tests-")
 os.environ["ROTATION_LEDGER_PATH"] = os.path.join(_TMP, "rotation_runs.jsonl")
 os.environ["ROTATION_ALERT_LOG"] = os.path.join(_TMP, "rotation_alerts.jsonl")
+# The cron log too. Without this, test_execution_quality drives _complete_fills
+# straight into data/rotation_cron.log, and those lines are indistinguishable
+# from a real run when read back weeks later.
+os.environ["ROTATION_CRON_LOG"] = os.path.join(_TMP, "rotation_cron.log")

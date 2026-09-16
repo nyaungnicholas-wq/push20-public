@@ -38,8 +38,23 @@ from . import session as _s
 
 _STATE_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "rotation_state.json")
 _LOG_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "rotation_cron.log")
+
 _PENDING_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "pending_orders.json")
 _SLIPPAGE_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "slippage_log.jsonl")
+def _log_path() -> str:
+    """Read at CALL time, and overridable, so the test suite cannot write into
+    the production log.
+
+    trader.notify already took env overrides for the ledger and the alert log
+    (commit ecbc95d, "the test suite was writing to the production run ledger").
+    This file was missed: tests/test_execution_quality.py drives _complete_fills
+    without patching _log, so every run appended real-looking "top-up",
+    "UNDERFILL" and "Alpaca not connected" lines to data/rotation_cron.log. Those
+    entries were later read back as evidence of a live incident on 2026-09-13
+    that never happened. A log that fabricates history is worse than no log.
+    """
+    return os.environ.get("ROTATION_CRON_LOG") or _LOG_PATH
+
 
 
 def _log(msg: str) -> None:
@@ -47,8 +62,9 @@ def _log(msg: str) -> None:
     line = f"{datetime.now().isoformat(timespec='seconds')}  {msg}"
     print(line)
     try:
-        os.makedirs(os.path.dirname(_LOG_PATH), exist_ok=True)
-        with open(_LOG_PATH, "a") as f:
+        path = _log_path()
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "a", encoding="utf-8") as f:
             f.write(line + "\n")
     except OSError:
         pass
