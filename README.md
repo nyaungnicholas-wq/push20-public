@@ -16,26 +16,74 @@ Honestly Measured](docs/sector-momentum-honestly-measured.html)**.
 
 ## Headline
 
-2006-01-01 → 2026-09-02, costs charged at 9.5 bps per side:
+**Corrected 2026-09-19.** The figures first published here were produced by an
+engine that filled at the same close it decided on. That is not a price the live
+loop can obtain, so the numbers below supersede them. What changed and why is in
+[Corrections](#corrections).
+
+2006-01-01 → 2026-09-02, costs charged at 9.5 bps per side, filling at the next
+open:
 
 | | CAGR | Max drawdown | Sharpe | Calmar |
 |---|---:|---:|---:|---:|
-| strategy | 18.52% | −28.37% | 0.892 | 0.653 |
+| strategy | 17.29% | −30.70% | 0.842 | 0.563 |
 | SPY buy & hold | 11.07% | −55.19% | 0.640 | 0.201 |
 
-Beats SPY in 15 of 21 years, median annual excess +5.0pp. Returned +5.5% in 2008
-while SPY lost 36.2%, and −13.7% in 2022 against SPY's −18.6%.
+Beats SPY in 14 of 21 years. Returned +4.6% in 2008 while SPY lost 36.2%, and
+−13.4% in 2022 against SPY's −18.6%.
 
-**Read these before the table above means anything:**
+**And 9.5 bps per side is an assumption, not a measurement.** Execution cost
+scales with account size, and once it is modelled per instrument and per size
+rather than as one flat constant:
 
-- This configuration **has never placed a live order.** It was selected
-  2026-09-13; first trade 2026-09-16.
-- Monte Carlo puts **P(max drawdown worse than −40%) at 63.4%.** The realised
-  −28.4% is one lucky path. Size to the distribution.
+| account | cost bps/side | CAGR |
+|---|---:|---:|
+| $10,000 | 8.20 | 17.56% |
+| $100,000 | 17.65 | 15.61% |
+| $1,000,000 | 47.70 | 9.62% |
+
+The strategy stops beating SPY somewhere around **$690,000**. The spread term is
+modelled from measured SIP quotes; the impact term uses a coefficient that has
+never been fitted to a real fill, which puts roughly a 3× band on it.
+
+**Read these before any table above means anything:**
+
+- This system **has never placed a live order.** `trader/alpaca_broker.py` in the
+  private repo hardcodes Alpaca's paper endpoint as the only URL it has. Every
+  fill ever logged is simulator output, so the cost assumption has never met a
+  real spread.
+- Monte Carlo puts **P(max drawdown worse than −40%) at about 62%**, not the
+  32% a weaker estimator reported. Size to the distribution.
 - The strategy is **below a prior high 89.5% of days.** The annual figure is
   earned in bursts separated by long flat stretches.
 - Minimum backtest length is **14.1 years against 20.6 available.** The data is
   nearly exhausted for further searching, and the holdout is spent.
+
+## Corrections
+
+Kept because a repository about measurement discipline that quietly edits its own
+numbers has none.
+
+**The fill convention (2026-09-19).** `reports/opt_harness.py` set
+`FILL_MODE = "close"`: the certifying engine, including the sealed holdout,
+transacted at the closing print its decision was computed from. The live loop
+queues for the next open. Filling at the next open instead costs **−0.92pp of
+CAGR and 2.33pp of drawdown** — paired per-year delta −0.94pp, sd 1.73, t −2.50,
+p 0.0126, 14 of 21 years hurt. The original 18.52% / −28.37% / 0.892 / 0.653
+reproduces exactly under the old convention (18.58% / −28.37% / 0.894 / 0.655),
+so this is a correction of the convention, not of the arithmetic.
+
+**The momentum window.** `trader/rotation.py` computes a 231-bar return where the
+configuration, the docstrings and the grid that selected it all mean 232. Every
+published number used 232; the live book runs 231. The table above reports the
+window the live loop actually computes, which costs a further 0.37pp.
+
+**The cost model.** A flat 9.5 bps per side ignores that sleeves differ (measured
+SIP half-spread 7.4 bps/side, worst sleeve 15.8), that impact scales with
+size/ADV, and that four of the traded 2x sleeves turn under $1m a day.
+
+**What has not changed:** the evidence protocol, the sealed holdout result, the
+PBO null band, and the list of what failed. Those were measured correctly.
 
 ## What is worth stealing from here
 
@@ -67,9 +115,12 @@ less drawdown. It de-levered at maximum fear and sat there through the rebound.
 ```
 trader/            strategy, broker adapter, live loop, metrics
 reports/           every experiment that produced a number in the write-up
-tests/             79 tests; several fail if a documented defect is reintroduced
+tests/             165 tests; several fail if a documented defect is reintroduced,
+                   and the newest ones are mutation-proven — mutate the momentum
+                   comparator, the selection, the weighting or a guard and they fail
 dashboard/         local status page
-docs/              the write-up
+docs/              the write-up, and docs/research/ — the measurements behind
+                   the corrections above, including what was refuted
 ```
 
 | Command | Produces |

@@ -20,3 +20,12 @@ os.environ["ROTATION_ALERT_LOG"] = os.path.join(_TMP, "rotation_alerts.jsonl")
 # straight into data/rotation_cron.log, and those lines are indistinguishable
 # from a real run when read back weeks later.
 os.environ["ROTATION_CRON_LOG"] = os.path.join(_TMP, "rotation_cron.log")
+# And the deferred-release plan. A test that writes data/pending_release.json
+# would hand the next real evening run a plan it never decided, and the release
+# path submits orders — so this one is not a logging nuisance like the three
+# above, it is an order-placement hazard.
+os.environ["ROTATION_RELEASE_PATH"] = os.path.join(_TMP, "pending_release.json")
+# The slippage log too. It is the execution MEASUREMENT: a test row in it
+# does not just look like history, it becomes a data point in the cost
+# number the strategy is graded on.
+os.environ["ROTATION_SLIPPAGE_LOG"] = os.path.join(_TMP, "slippage_log.jsonl")

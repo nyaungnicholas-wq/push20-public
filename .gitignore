@@ -1,18 +1,44 @@
-# Credentials. This repo exists because .env was committed to the previous one.
-.env
-.env.*
-!.env.example
-
-# Live account + machine state. Never publish an order id or an equity figure.
-data/
-logs/
-*.log
-pending_orders.json
-slippage_log.jsonl
-rotation_state.json
-
 .venv/
 __pycache__/
-*.py[cod]
+*.pyc
 .pytest_cache/
 .DS_Store
+
+# secrets — NEVER commit
+.env
+
+# logs & scratch output
+*.log
+out.json
+err.log
+
+# caches & transient runtime state
+data/_cache/
+data/paper_account.json
+data/*.parquet
+data/*.jsonl
+data/pending_orders.json
+data/rotation_state.json
+data/live_checkup_history.json
+
+# tool / worktree dirs
+.beprobe/
+.claude/worktrees/
+
+# Live runtime state - churns every run, and restoring an old commit would
+# restore a stale drawdown baseline into the risk gate.
+data/risk_state.json
+data/rotation_runs.jsonl.bak-before-depollute
+data/rotation_runs.test-pollution.jsonl
+
+# research caches - large, re-downloadable
+data/ff_cache/
+data/pit/
+data/pit_final.out
+data/task-backup/
+*.bak
+*.bak_r1
+
+# .env backups hold live credentials
+.env.bak*
+.env.*.bak

@@ -96,6 +96,15 @@ def live_sim_config():
     # harness gave a defensive fill a full weighted slot and could route it to
     # UGL/UBT, which the live allocator has no code path to do. Worth ~0.3pp CAGR.
     cfg["defensive_live"] = 1
+    # A2c (2026-09-17): XLC is the only traded sector with no 2x listing. The live
+    # allocator (turbo_allocation Tier 1) books that pick at the UNLEVERED weight
+    # and lets the difference fall into GLD+TLT, so the account runs ~8.3pp less
+    # equity exposure than the exposure-preserving sizing the harness used, on 134
+    # of 1,655 rebalances. Exposure-preserving is the CORRECT design and the account
+    # can fund it from cash (max 83.3% of equity, no margin) - but it is not what is
+    # deployed, so the checkup grades the deployed behaviour until rotation.py is
+    # fixed. Worth -0.11pp CAGR / -0.007 Sharpe here. See research/v3/A2c_xlc_and_cap.md.
+    cfg["unlev_live_size"] = 1
     notes.append("min_hold_days suspends the risk cap as well as rotation: a VIX "
                  "spike on day 2 of a 3-day hold cannot de-lever. Modelled faithfully "
                  "here (harness does the same); it is a known property, not a bug fix.")

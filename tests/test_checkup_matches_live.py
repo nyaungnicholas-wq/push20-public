@@ -50,6 +50,13 @@ GRADED = {
     "vix_gate_cap": 1.0,
     "basket_vol": 1,
     "defensive_live": 1,
+    # A2c (2026-09-17): not a flag change - a fidelity correction. XLC has no 2x
+    # listing and the live allocator books it at the UNLEVERED weight, which the
+    # harness did not model. Adding it makes the checkup grade the deployed book.
+    # It also makes the recorded expectation below stale by -0.11pp CAGR (17.91%
+    # vs 18.52% at close fills); that re-grade belongs with the fill-convention
+    # re-grade, not to a second one. See research/v3/A2c_xlc_and_cap.md.
+    "unlev_live_size": 1,
 }
 
 
@@ -155,3 +162,150 @@ def test_live_flags_produce_the_graded_behaviour():
         "the VIX>=35 tier de-levered into the bottom and missed the rebound: "
         "in-sample it cost 1.51pp CAGR and made drawdown worse"
     )
+
+
+# ---------------------------------------------------------------------------
+# Flag COVERAGE. Added 2026-09-17 (track A4).
+#
+# The two tests above pin the config `live_sim_config()` produces. They were
+# blind by construction to any flag it does not read: measured on 2026-09-17 it
+# touched 19 of the 26 DAILY_CHAMPION_FLAGS, so seven live knobs -- including
+# `rotation_two_way_vol`, which is the whole leverage overlay -- could be
+# changed without a single test noticing.
+#
+# The fix is a partition, not a longer list. Every flag must be in exactly one
+# of MODELLED (the checkup reads it) or NOT_MODELLED (it does not, and the
+# pinned value plus the stated reason are why that is safe). A new flag belongs
+# to neither set and fails; a NOT_MODELLED flag whose value moves fails; a flag
+# that silently stops being read fails.
+# ---------------------------------------------------------------------------
+
+# live flag -> the opt_harness key it turns into
+MODELLED = {
+    "rotation_lookbacks":        "lookback",
+    "rotation_signal_ema":       "ema_span",
+    "rotation_top_n":            "top_n",
+    "rotation_min_hold_days":    "min_hold_days",
+    "rotation_vol_target":       "vol_target",
+    "rotation_vol_window":       "vol_window",
+    "rotation_vol_floor":        "vol_floor",
+    "rotation_vol_cap":          "vol_cap_bull",
+    "rotation_vol_cap_bear":     "vol_cap_bear",
+    "rotation_vol_cap_sma":      "regime_sma",
+    "rotation_position_cap":     "max_weight",
+    "rotation_defensive_symbol": "defensive",
+    "rotation_return_prop":      "weight_scheme",
+    "rotation_use_3x":           "use_3x",
+    "rotation_vix_gate":         "vix_gate_level",
+    "rotation_vix_lo":           "vix_gate_level",
+    "rotation_vix_lo_cap":       "vix_gate_cap",
+    "rotation_vix_hi_cap":       "vix_gate_cap",
+    "rotation_basket_vol":       "basket_vol",
+}
+
+# live flag -> the value this blind spot is signed off at, and why
+NOT_MODELLED = {
+    # The harness hardcodes the >0 gate; there is no knob to turn it off, so a
+    # flip here would silently un-model itself.
+    "rotation_abs_momentum": True,
+    # Weighting: the harness takes one `weight_scheme` string, derived from
+    # rotation_return_prop alone. These three must stay at their inert values or
+    # the derived string stops describing the live sleeve.
+    "rotation_weight_scheme": "momentum",
+    "rotation_momentum_weight": False,
+    "rotation_weight_squared": False,
+    # The harness has no un-levered mode: it always runs the two-way overlay.
+    # With this False the live book would stop levering and the harness would
+    # not notice. It is the single most consequential unmodelled flag.
+    "rotation_two_way_vol": True,
+    # Read only when the >=35 tier is active (hi_cap < lo_cap). The tier was
+    # retired on the 2026-09-13 holdout; re-activating it makes this flag live
+    # again, which is exactly when a re-grade is required.
+    "rotation_vix_hi": 35.0,
+    # The harness looks the VIX column up by a fixed name.
+    "rotation_vix_symbol": "^VIX",
+}
+
+
+def _flags_read_by_live_sim_config():
+    """Which DAILY_CHAMPION_FLAGS keys live_sim_config() actually touches."""
+    import trader.rotation as rot
+
+    seen = set()
+
+    class _Tracking(dict):
+        def __getitem__(self, k):
+            seen.add(k)
+            return dict.__getitem__(self, k)
+
+        def get(self, k, default=None):
+            seen.add(k)
+            return dict.get(self, k, default)
+
+    original = rot.DAILY_CHAMPION_FLAGS
+    rot.DAILY_CHAMPION_FLAGS = _Tracking(original)
+    try:
+        from live_checkup import live_sim_config
+
+        live_sim_config()
+    finally:
+        rot.DAILY_CHAMPION_FLAGS = original
+    return seen
+
+
+def test_every_live_flag_is_either_modelled_or_explicitly_pinned():
+    """No flag may be absent from both sets. A new knob lands here first."""
+    from trader.rotation import DAILY_CHAMPION_FLAGS as F
+
+    partition = set(MODELLED) | set(NOT_MODELLED)
+    assert not (set(MODELLED) & set(NOT_MODELLED)), "a flag cannot be in both sets"
+    assert set(F) == partition, (
+        "DAILY_CHAMPION_FLAGS and the checkup's coverage map have diverged.\n"
+        f"  flags with no coverage decision: {sorted(set(F) - partition)}\n"
+        f"  coverage entries with no flag:   {sorted(partition - set(F))}\n"
+        "Add the flag to MODELLED (and translate it in live_sim_config) or to "
+        "NOT_MODELLED with its pinned value and the reason it is safe."
+    )
+    assert len(F) == 26, f"flag count changed to {len(F)}; re-do the partition"
+
+
+def test_modelled_flags_are_actually_read_by_the_checkup():
+    """MODELLED is a claim about behaviour, so it is measured, not asserted.
+
+    Without this, moving a flag into MODELLED would 'fix' the coverage test
+    while the checkup went on ignoring it.
+    """
+    read = _flags_read_by_live_sim_config()
+    assert set(MODELLED) <= read, (
+        f"claimed modelled but never read: {sorted(set(MODELLED) - read)}"
+    )
+    leaked = read & set(NOT_MODELLED)
+    assert not leaked, (
+        f"{sorted(leaked)} is now read by live_sim_config(); move it to MODELLED "
+        "(and re-grade, because the harness config just changed)"
+    )
+
+
+def test_unmodelled_flags_are_pinned_at_the_values_that_make_them_safe():
+    """The blind spot is only acceptable at these values.
+
+    This is what closes the hole the audit found: previously a change to
+    rotation_two_way_vol passed the whole suite in silence.
+    """
+    from trader.rotation import DAILY_CHAMPION_FLAGS as F
+
+    for flag, expected in NOT_MODELLED.items():
+        assert F[flag] == expected, (
+            f"{flag} moved {expected!r} -> {F[flag]!r}, and the monthly checkup "
+            "does not model it. Either model it in live_sim_config() or re-grade "
+            "on reports/holdout_v2.py and update NOT_MODELLED."
+        )
+
+
+def test_every_modelled_flag_reaches_a_key_of_the_derived_config():
+    """The MODELLED map must name real harness keys, not aspirational ones."""
+    from live_checkup import live_sim_config
+
+    cfg, _ = live_sim_config()
+    missing = {f: k for f, k in MODELLED.items() if k not in cfg}
+    assert not missing, f"MODELLED points at keys the config does not have: {missing}"

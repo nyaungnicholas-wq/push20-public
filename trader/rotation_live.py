@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import math
 import os
+import datetime as _dt
 from datetime import date, timedelta
 from typing import Dict, Optional
 
@@ -40,7 +41,13 @@ _STATE_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "rotation_st
 _LOG_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "rotation_cron.log")
 
 _PENDING_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "pending_orders.json")
-_SLIPPAGE_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "slippage_log.jsonl")
+# The slippage log is the execution MEASUREMENT, not a diagnostic: a test row
+# in it becomes a data point in the cost number the strategy is graded on.
+# Resolved from the environment at IMPORT (conftest sets it before trader is
+# imported) rather than at call time, because eight tests monkeypatch this
+# constant and a call-time getenv would silently ignore them.
+_SLIPPAGE_PATH = os.getenv("ROTATION_SLIPPAGE_LOG") or os.path.join(
+    os.path.dirname(__file__), "..", "data", "slippage_log.jsonl")
 def _log_path() -> str:
     """Read at CALL time, and overridable, so the test suite cannot write into
     the production log.
@@ -178,6 +185,100 @@ def _save_pending(records: list) -> None:
         pass
 
 
+
+
+# --- Delayed release (2026-09-19) -------------------------------------------
+# MEASURED (research/v3/EXECUTION.md): the whole-book notional-weighted half
+# spread is 27.63 bps/side at 09:30:00.000 against 7.23 five minutes later, over
+# 806 legs on 150 mornings, and the signed drift across that window is
+# indistinguishable from zero at every offset out to an hour. Waiting therefore
+# narrows the spread without the price running away from a momentum book --
+# about 10.4 bps/side, ~2.1pp of CAGR. The defensible window is +5m to +15m; the
+# argmin inside it is NOT established, so this is a dial, not a constant.
+#
+# OFF BY DEFAULT. ROTATION_RELEASE_DELAY_MIN=0 keeps today's behaviour exactly:
+# the evening run submits. Set it positive to split the cycle -- the evening run
+# DECIDES and persists a plan, and a separate morning run releases it.
+#
+# The split buys the spread at the price of a failure mode that does not exist
+# today: a queued evening order fills at the open whether or not this box is
+# awake, and a deferred one does not. So a missed release is made LOUD -- the
+# next evening run detects the stale plan, alerts, and recomputes. Losing one
+# rebalance against min_hold_days=3 is a cost; losing one SILENTLY is the
+# failure this project has already had twice.
+_RELEASE_PATH = os.path.join(os.path.dirname(__file__), "..", "data",
+                             "pending_release.json")
+
+
+def _release_delay_min() -> int:
+    """Minutes after the open to release. 0 (the default) = submit in the evening."""
+    try:
+        return max(0, int(os.getenv("ROTATION_RELEASE_DELAY_MIN", "0") or 0))
+    except ValueError:
+        return 0
+
+
+def _release_path() -> str:
+    # Read at call time, like _log_path: the test suite redirects it, and a
+    # module-level constant would let tests write the production plan file.
+    return os.getenv("ROTATION_RELEASE_PATH", _RELEASE_PATH)
+
+
+def _save_release_plan(plan: dict) -> bool:
+    """Persist the deferred plan atomically.
+
+    Returns False on failure, and the caller MUST treat that as "do not defer":
+    a plan that did not reach disk is a rebalance that will never happen, and
+    silently swallowing that is precisely how _save_state's OSError handler
+    turned a corrupt file into a missing trade.
+    """
+    import json
+    path = _release_path()
+    try:
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        tmp = path + ".tmp"
+        with open(tmp, "w") as f:
+            json.dump(plan, f)
+        os.replace(tmp, path)
+        return True
+    except OSError as e:
+        _log(f"release plan NOT persisted ({e}) -- not deferring.")
+        return False
+
+
+def _load_release_plan() -> Optional[dict]:
+    import json
+    try:
+        with open(_release_path()) as f:
+            plan = json.load(f)
+        return plan if isinstance(plan, dict) else None
+    except (OSError, ValueError):
+        return None
+
+
+def _clear_release_plan() -> None:
+    try:
+        os.remove(_release_path())
+    except OSError:
+        pass
+
+
+def _minutes_since_open(now_et=None) -> Optional[float]:
+    """Minutes since 09:30 ET today, or None if it cannot be determined.
+
+    None means "unknown", and every caller treats unknown as "do not block" --
+    the market-open check has already passed by then, so refusing on a clock
+    failure would strand the plan rather than protect it.
+    """
+    try:
+        from zoneinfo import ZoneInfo
+        now = now_et or _dt.datetime.now(ZoneInfo("America/New_York"))
+        return (now - now.replace(hour=9, minute=30, second=0,
+                                  microsecond=0)).total_seconds() / 60.0
+    except Exception:
+        return None
+
+
 def _order_summary(result: dict) -> str:
     """One readable line per order, for the phone. Never raises: this feeds an
     alert, and an alert that dies formatting itself reports nothing at all."""
@@ -191,36 +292,106 @@ def _order_summary(result: dict) -> str:
         return f"{len(result.get('sent') or [])} orders (detail unavailable)."
 
 
-def _fill_session_open(symbol: str, when: str) -> tuple:
-    """(fill_date, open_price) for `symbol` on the session it actually filled in.
+def _et_stamp(when) -> tuple:
+    """(ET ISO timestamp, ET session date) for an Alpaca UTC fill timestamp.
 
-    `when` is Alpaca's `filled_at` (ISO, UTC) — the real fill instant, not a guess
-    from when reconciliation happened to run. Orders are queued after the close and
-    execute at the next open, so this open is the correct benchmark for execution
-    cost. Returns (date, None) when no bar is available; callers must then omit the
-    slippage field rather than substitute a zero.
+    `str(when)[:10]` -- what this used to be -- read the UTC calendar date and
+    threw the time away. Both losses were T6 findings: any fill after 20:00 ET
+    stamps onto the NEXT calendar day, moving the execution benchmark a whole
+    session, and the discarded time is exactly the field an NBBO lookup needs.
     """
     if not when:
         return None, None
-    day = str(when)[:10]
     try:
-        from .data_source import get_data_source
-        import pandas as pd
+        s = str(when).replace("Z", "+00:00")
+        if "." in s:                       # Alpaca stamps nanoseconds
+            head, _, tail = s.partition(".")
+            frac = "".join(c for c in tail if c.isdigit())[:6]
+            s = f"{head}.{frac or '0'}{tail[len(frac):].lstrip('0123456789')}"
+        et = _dt.datetime.fromisoformat(s).astimezone(_s.ET)
+    except (TypeError, ValueError):
+        return None, None
+    return et.isoformat(timespec="seconds"), et.date().isoformat()
+
+
+def _session_bar(symbol: str, day: str) -> Optional[dict]:
+    """OHLC bar for `symbol` on ET session `day`, or None.
+
+    Never raises: measurement must not be able to break reconciliation, which
+    is what clears pending orders.
+    """
+    if not symbol or not day:
+        return None
+    try:
         start = (pd.Timestamp(day) - pd.Timedelta(days=7)).strftime("%Y-%m-%d")
         end = (pd.Timestamp(day) + pd.Timedelta(days=2)).strftime("%Y-%m-%d")
-        raw = get_data_source("yfinance").history([symbol], start, end)
-        df = raw.get(symbol)
+        df = (get_data_source("yfinance").history([symbol], start, end) or {}).get(symbol)
         if df is None or df.empty or "open" not in df:
-            return day, None
-        idx = pd.to_datetime(df.index).normalize()
-        hit = df[idx == pd.Timestamp(day).normalize()]
+            return None
+        hit = df[pd.to_datetime(df.index).normalize() == pd.Timestamp(day).normalize()]
         if hit.empty:
-            return day, None
-        px = float(hit["open"].iloc[0])
-        return day, (px if px > 0 else None)
+            return None
+        row = hit.iloc[0]
+        bar = {k: float(row[k]) for k in ("open", "high", "low", "close") if k in hit}
+        return bar if bar.get("open", 0) > 0 else None
     except Exception:
-        # Measurement must never be able to break reconciliation, which is what
-        # clears pending orders. A missing open costs one data point.
+        return None
+
+
+def _fill_session_open(symbol: str, when: str) -> tuple:
+    """(ET session date of the fill, that session's open price).
+
+    Returns (date, None) when no bar is available; callers must then omit the
+    slippage field rather than substitute a zero.
+    """
+    _, day = _et_stamp(when)
+    if day is None:
+        return None, None
+    bar = _session_bar(symbol, day)
+    return day, (bar["open"] if bar else None)
+
+
+def _arrival_instant(rec: dict, fill_date: str) -> Optional[str]:
+    """When the order actually became live -- the reference point execution is
+    measured from.
+
+    The old instrument used the fill session's official OPEN. That is the wrong
+    reference and it is biased: a market DAY order queued the night before is
+    released at 09:30 as a plain market order and does NOT participate in the
+    opening auction, so it never had access to the opening print. An order
+    submitted during regular hours arrives when it was submitted.
+    """
+    if not fill_date:
+        return None
+    try:
+        sess_open = _dt.datetime.combine(
+            date.fromisoformat(fill_date), _dt.time(9, 30), tzinfo=_s.ET)
+    except (TypeError, ValueError):
+        return None
+    sub = rec.get("submitted_at")
+    if sub:
+        try:
+            t = _dt.datetime.fromisoformat(sub).astimezone(_s.ET)
+            if t > sess_open:
+                return t.isoformat()
+        except (TypeError, ValueError):
+            pass
+    return sess_open.isoformat()
+
+
+def _quote_at(cfg, symbol: str, when=None, after: bool = False) -> Optional[dict]:
+    """NBBO for `symbol` -- latest, or the one in force at instant `when`.
+
+    `after=True` takes the first quote AT OR AFTER the instant, which is what an
+    arrival benchmark at the 09:30 release needs. Wrapped so a quote outage can
+    never propagate into the order path.
+    """
+    try:
+        from .alpaca_feed import AlpacaFeed
+        return AlpacaFeed(cfg.alpaca_key, cfg.alpaca_secret).get_quote(
+            symbol, when, after=after)
+    except Exception:
+        return None
         return day, None
 
 
@@ -241,6 +412,10 @@ def reconcile_fills(cfg: Config) -> int:
     alpaca = AlpacaBroker(cfg.alpaca_key, cfg.alpaca_secret)
     if not alpaca.connected():
         return 0
+    try:
+        venue_tag = alpaca.provenance()
+    except Exception:
+        venue_tag = {}
 
     # Statuses Alpaca will never move off — once seen, the order is done and must
     # be dropped from `pending` even when nothing filled, or it is re-queried forever.
@@ -293,9 +468,27 @@ def reconcile_fills(cfg: Config) -> int:
         # slippage_bps: session open -> fill. This is the actual execution cost,
         # and it is the only one of the two the account can control. Measured
         # over the first 105 fills: drift 5.27bps, execution 3.51bps.
-        fill_date, open_px = _fill_session_open(sym, o.get("filled_at"))
+        filled_at = o.get("filled_at")
+        fill_ts_et, fill_date = _et_stamp(filled_at)
+        bar = _session_bar(sym, fill_date)
+        open_px = bar["open"] if bar else None
+
+        # The open is only the RIGHT benchmark if the fill happened in that
+        # session. T6 found ~85 of the first 105 rows benchmarked against the
+        # wrong session, so `slippage_bps` was reporting an overnight gap as
+        # execution. A fill price outside the session's own High/Low proves the
+        # date is wrong, and a wrong benchmark is worse than no number.
+        bench_ok = bool(bar and open_px
+                        and bar.get("low", 0) <= fill <= bar.get("high", 0))
+        rested = None
+        try:
+            rested = _s.sessions_between(date.fromisoformat(rec.get("date")),
+                                         date.fromisoformat(fill_date))
+        except (TypeError, ValueError):
+            pass
+
         drift = _signed(exp)
-        slip = _signed(open_px) if open_px else None
+        slip = _signed(open_px) if bench_ok else None
         row = {
             "logged_at": datetime.now().isoformat(timespec="seconds"),
             "submit_date": rec.get("date"), "symbol": sym,
@@ -304,16 +497,63 @@ def reconcile_fills(cfg: Config) -> int:
             "side": side, "qty": got_qty, "submitted_qty": want_qty,
             "status": status,
             "expected": exp, "fill": fill, "order_id": oid,
-            "fill_date": fill_date,
+            # Full resolution, both stamps. `fill_date` alone cannot tell an
+            # opening print from a 15:59 one, and every microstructure question
+            # asked of this log needs the time.
+            "filled_at": filled_at, "filled_at_et": fill_ts_et,
+            "fill_date": fill_date, "bench_ok": bench_ok,
         }
+        if rested is not None:
+            # Sessions the order rested before executing. >1 means it expired and
+            # was re-submitted, so its `expected` is stale by that many days and
+            # its drift is market movement, not cost. Those rows have to be
+            # separable, not averaged in.
+            row["rested_sessions"] = rested
+        if rec.get("submitted_at"):
+            row["submitted_at"] = rec["submitted_at"]
+        # Provenance, so the log can answer "was this a real fill?" without a
+        # code read. Every row written before 2026-09-17 lacks it and is paper.
+        row.update(venue_tag)
         if drift is not None:
             row["drift_bps"] = round(drift, 2)
         if open_px:
             row["open_px"] = open_px
-        # Omitted entirely when the open is unavailable. A 0.0 stand-in would be
-        # read as "executed perfectly" by every consumer downstream.
+        # Omitted entirely when the benchmark is unavailable or wrong. A 0.0
+        # stand-in reads as "executed perfectly" to every consumer downstream.
         if slip is not None:
             row["slippage_bps"] = round(slip, 2)
+
+        # NBBO at submit (carried from the pending record) and at the fill.
+        # These are what separate spread from drift: the daily-bar open cannot,
+        # because it is one price for a whole session.
+        if rec.get("quote_submit"):
+            row["quote_submit"] = rec["quote_submit"]
+        sgn = 1 if side == "buy" else -1
+        qf = _quote_at(cfg, sym, filled_at)
+        if qf:
+            row["quote_fill"] = qf
+            # Effective half-spread: how far through the mid prevailing AT the
+            # fill we paid. This is what the router cost on the last print --
+            # but for a large order it is measured against an already-moved
+            # quote, so on its own it understates a book walk.
+            row["eff_spread_bps"] = round((fill - qf["mid"]) / qf["mid"]
+                                          * 10000.0 * sgn, 2)
+        arr_ts = _arrival_instant(rec, fill_date)
+        qa = _quote_at(cfg, sym, arr_ts, after=True) if arr_ts else None
+        if qa:
+            row["arrival_ts"] = arr_ts
+            row["quote_arrival"] = qa
+            # THE execution number: fill against the mid in force when the order
+            # became live. Unlike the session open it is a price the order could
+            # actually have had.
+            row["arrival_bps"] = round((fill - qa["mid"]) / qa["mid"]
+                                       * 10000.0 * sgn, 2)
+            if qf:
+                # What is left is the book walk -- the capacity term. Four of the
+                # ten sleeves route to a 2x ETF under $1m/day, and a full position
+                # is 13.7% of UCC's ADV, so this is the field that will show it.
+                row["impact_bps"] = round(row["arrival_bps"]
+                                          - row["eff_spread_bps"], 2)
         rows.append(row)
         logged += 1
 
@@ -422,7 +662,9 @@ def _complete_fills(alpaca, pending, prices, asof, verbose: bool = False,
                 pending.append({"date": str(asof.date()), "symbol": sym, "side": side,
                                 "qty": int(qty),
                                 "expected": float(prices.get(sym, 0) or 0),
-                                "order_id": oid})
+                                "order_id": oid,
+                                "submitted_at": _s.now_et().isoformat(timespec="seconds"),
+                                "topup": True})
             else:
                 _log(f"TOP-UP FAILED — {side} {qty} {sym} was NOT submitted "
                      f"(broker returned nothing). Book is off target.")
@@ -526,6 +768,30 @@ def run_scheduled(cfg: Config, dry_run: bool = False,
         # Friday evening rests ~62h through a weekend of news; Sunday evening
         # rests ~10h and is fine. Measuring close-to-target instead would
         # refuse Sunday too, which is the night that actually covers Monday.
+
+        # Delayed-release bookkeeping. A plan still sitting here for a session
+        # that has already come and gone means the release window was missed --
+        # the box was not awake after the open. Say so loudly: a deferred
+        # rebalance that silently never happened is worse than not deferring.
+        _plan = _load_release_plan()
+        if _plan and _plan.get("target_session") != target_s:
+            _log(f"MISSED RELEASE — plan decided {_plan.get('session_et')} for "
+                 f"{_plan.get('target_session')} was never released. Discarding.")
+            _notify("⚠️ PUSH-20 missed its release window",
+                    f"The plan for {_plan.get('target_session')} was never "
+                    f"submitted — nothing was awake after the open. No orders "
+                    f"were placed for that session.")
+            _ledger("missed_release", "release_window_missed",
+                    session_et=_plan.get("session_et"),
+                    target_session=_plan.get("target_session"), ok=False)
+            _clear_release_plan()
+            _plan = None
+        if _plan:
+            _log(f"skip — a plan is already queued for release on {target_s}.")
+            _ledger("skip", "already_deferred", session_et=session_et,
+                    target_session=target_s)
+            return {"action": "skip", "reason": "already_deferred"}
+
         gap = (target - _s.et_date()).days
         if gap > MAX_QUEUE_GAP_DAYS:
             _log(f"skip — next session {target_s} is {gap}d away; refusing to "
@@ -559,6 +825,22 @@ def run_scheduled(cfg: Config, dry_run: bool = False,
                     target_session=target_s, days_held=days_held)
             return {"action": "skip", "reason": "min_hold_days"}
 
+
+        delay = _release_delay_min()
+        if delay > 0:
+            plan = {"session_et": session_et, "target_session": target_s,
+                    "days_held": days_held, "delay_min": delay,
+                    "decided_at": _dt.datetime.now(_dt.timezone.utc).isoformat()}
+            if dry_run or _save_release_plan(plan):
+                _log(f"DEFERRED — decided for {target_s} on {session_et}; "
+                     f"release at open+{delay}m (held {days_held}d).")
+                _ledger("deferred", "awaiting_release", session_et=session_et,
+                        target_session=target_s, days_held=days_held,
+                        delay_min=delay, dry_run=dry_run)
+                return {"action": "deferred", "target_session": target_s,
+                        "session_et": session_et, "delay_min": delay}
+            _log("falling through to immediate submission (plan not persisted).")
+
         _log(f"REBALANCE (for {target_s}, decided on {session_et}) — "
              f"Daily Champion ({'DRY RUN' if dry_run else 'LIVE'}, held {days_held}d).")
         try:
@@ -570,7 +852,7 @@ def run_scheduled(cfg: Config, dry_run: bool = False,
             # the next evening run via reconcile_fills().
             result = run_rotation_cycle(cfg, dry_run=dry_run, verbose=True,
                                         moc=False, complete_fills=False,
-                                        require_asof=closed)
+                                        require_asof=closed, _gated=True)
         except Exception as e:
             _log(f"ERROR — rebalance failed: {e}")
             _ledger("error", str(e)[:200], session_et=session_et,
@@ -615,7 +897,8 @@ def run_scheduled(cfg: Config, dry_run: bool = False,
     # expires the remainder) vs 99% for plain market orders. A book that reaches its
     # target a few basis points off the close beats a book that never reaches it at all.
     try:
-        result = run_rotation_cycle(cfg, dry_run=dry_run, verbose=True, moc=False)
+        result = run_rotation_cycle(cfg, dry_run=dry_run, verbose=True, moc=False,
+                                    _gated=True)
     except Exception as e:
         _log(f"ERROR — rebalance failed: {e}")
         if not dry_run:
@@ -639,6 +922,113 @@ def run_scheduled(cfg: Config, dry_run: bool = False,
     except Exception:
         pass
     return {"action": "rebalanced", **result}
+
+
+
+def run_release(cfg: Config, dry_run: bool = False) -> Dict:
+    """Release a plan the evening run deferred, once the open has settled.
+
+    This RELEASES A DECISION; it does not take a new one. The targets are
+    re-derived from the same closed session the evening run used, pinned through
+    require_asof, so what is submitted is what was decided -- not a fresh look at
+    a market that has since opened.
+
+    Every gate must pass: a plan exists, it targets TODAY, Alpaca is connected,
+    the market is open, the configured delay has elapsed, and the pre-trade risk
+    gate allows it. Every return path writes a ledger row.
+    """
+    global _ALERT_FAILED
+    _ALERT_FAILED = False
+    apply_daily_champion(cfg)
+
+    plan = _load_release_plan()
+    if not plan:
+        _log("release — nothing queued.")
+        _ledger("skip", "no_release_plan")
+        return {"action": "skip", "reason": "no_release_plan"}
+
+    target_s = plan.get("target_session")
+    session_et = plan.get("session_et")
+    today = _s.et_date().isoformat()
+    if target_s != today:
+        _log(f"release — queued plan targets {target_s}, today is {today}; not releasing.")
+        _ledger("skip", "release_not_today", target_session=target_s)
+        return {"action": "skip", "reason": "release_not_today"}
+
+    alpaca = AlpacaBroker(cfg.alpaca_key, cfg.alpaca_secret)
+    if not (cfg.alpaca_key and cfg.alpaca_secret and alpaca.connected()):
+        _log("release SKIP — Alpaca not connected.")
+        _notify("⚠️ PUSH-20 could not release",
+                f"Alpaca not connected at the release window for {target_s}. "
+                "The decided orders were NOT submitted.")
+        _ledger("skip", "not_connected", target_session=target_s, ok=False)
+        return {"action": "skip", "reason": "not_connected"}
+
+    if not alpaca.is_market_open():
+        _log("release — market is not open.")
+        _ledger("skip", "market_closed_at_release", target_session=target_s)
+        return {"action": "skip", "reason": "market_closed_at_release"}
+
+    delay = int(plan.get("delay_min") or _release_delay_min())
+    mins = _minutes_since_open()
+    if mins is not None and mins < delay:
+        _log(f"release — too early ({mins:.1f}m since the open, need {delay}m).")
+        _ledger("skip", "release_too_early", target_session=target_s)
+        return {"action": "skip", "reason": "release_too_early"}
+
+    try:
+        from . import risk_gate
+        decision = risk_gate.evaluate(alpaca.get_account(), alpaca.get_positions())
+        if not decision.allowed:
+            _log(f"release BLOCKED by risk gate — {decision.blocked_summary()}")
+            _notify("🛑 PUSH-20 release BLOCKED", decision.blocked_summary())
+            _ledger("blocked", decision.blocked_summary()[:200],
+                    target_session=target_s, ok=False)
+            return {"action": "blocked", "reason": decision.blocked_summary()}
+    except Exception as e:
+        _log(f"release BLOCKED — risk gate error (failing closed): {e}")
+        _notify("🛑 PUSH-20 release blocked", f"risk gate error, failing closed: {e}")
+        _ledger("blocked", f"risk gate error: {e}"[:200],
+                target_session=target_s, ok=False)
+        return {"action": "blocked", "reason": f"risk gate error: {e}"}
+
+    # Same idempotency key the evening path uses. A double release would double
+    # the book, which is the one failure this split must never introduce.
+    if _load_state().get("last_target_session") == target_s:
+        _log(f"release — orders already submitted for {target_s}.")
+        _clear_release_plan()
+        _ledger("skip", "already_submitted_for_session", target_session=target_s)
+        return {"action": "skip", "reason": "already_submitted_for_session"}
+
+    since = "unknown" if mins is None else f"{mins:.1f}"
+    _log(f"RELEASE (for {target_s}, decided on {session_et}) — "
+         f"{'DRY RUN' if dry_run else 'LIVE'}, {since}m after the open.")
+    try:
+        result = run_rotation_cycle(cfg, dry_run=dry_run, verbose=True, moc=False,
+                                    complete_fills=False, _gated=True,
+                                    require_asof=date.fromisoformat(session_et))
+    except Exception as e:
+        _log(f"ERROR — release failed: {e}")
+        if not dry_run:
+            _notify("⚠️ PUSH-20 release FAILED",
+                    f"The {target_s} release errored: {e}. Check the logs.")
+        _ledger("error", str(e)[:200], session_et=session_et,
+                target_session=target_s, ok=False)
+        raise
+
+    if not dry_run:
+        state = _load_state()
+        state["last_rebalance_date"] = session_et
+        state["last_target_session"] = target_s
+        _save_state(state)
+        _clear_release_plan()
+        _log(f"done — released {len(result.get('sent', []))} orders for {target_s}.")
+        _notify(f"PUSH-20 released: {len(result.get('sent', []))} orders for {target_s}",
+                _order_summary(result))
+    _ledger("release", session_et=session_et, target_session=target_s,
+            orders_sent=len(result.get("sent", [])), delay_min=delay,
+            ok=not _ALERT_FAILED, dry_run=dry_run)
+    return result
 
 
 def _target_weights(cfg: Config, close: pd.DataFrame, asof: pd.Timestamp,
@@ -690,7 +1080,7 @@ def _assert_fresh(asof, require_asof):
 
 def run_rotation_cycle(cfg: Config, dry_run: bool = True, verbose: bool = True,
                        moc: bool = False, complete_fills: bool = True,
-                       require_asof=None) -> Dict:
+                       require_asof=None, _gated: bool = False) -> Dict:
     """Rebalance the Alpaca paper account to the Daily Champion target portfolio.
 
     moc=True submits Market-On-Close orders (fills at the closing auction) instead
@@ -709,6 +1099,34 @@ def run_rotation_cycle(cfg: Config, dry_run: bool = True, verbose: bool = True,
     current, so a stale yfinance frame would size positions from old prices.
     The same guard already exists for the other strategy at engine.py:74-88.
     """
+    # UNGATED LIVE SUBMISSION IS REFUSED (2026-09-19).
+    #
+    # This is the bare rebalance primitive. run_scheduled calls it only AFTER its
+    # gate stack passes. S1 measured what is missing when something calls it
+    # directly: the pre-trade risk gate, the market-state check, the queue-gap
+    # refusal, the session idempotency key, min_hold_days, the data-freshness
+    # assert, the state write, the ledger row and the alert. Ten guards.
+    #
+    # complete_fills also defaults True here, which is the doubling mechanism --
+    # the shortfall sweep re-submits anything unfilled "while the market is still
+    # open", so run after hours it sees a 100% shortfall and re-sends the book.
+    #
+    # _gated is the caller asserting it applied those gates. Deliberately private
+    # and deliberately not on the CLI: the answer to "force a rebalance now" is
+    # `--scheduled --live`, which forces it THROUGH the gates, not around them.
+    #
+    # This check is FIRST on purpose. An earlier draft of this patch landed the
+    # same text inside the docstring, where it compiled cleanly and did nothing;
+    # the connected-check below then produced a plausible-looking refusal for an
+    # unrelated reason. tests/test_guard_bypass.py asserts it is reachable code.
+    if not dry_run and not _gated:
+        raise RuntimeError(
+            "run_rotation_cycle cannot submit live orders directly: no risk "
+            "gate, no market-state check, no min_hold_days, no idempotency key, "
+            "and complete_fills defaults True (which re-sends the whole book "
+            "after hours). Call run_scheduled(), or pass _gated=True only if "
+            "you have applied those guards yourself.")
+
     apply_daily_champion(cfg)
     tif = "cls" if moc else "day"
 
@@ -863,10 +1281,23 @@ def run_rotation_cycle(cfg: Config, dry_run: bool = True, verbose: bool = True,
         pending = []   # for slippage tracking: expected (decision) price vs actual fill
         def _record(res, sym, side, q):
             oid = res.get("id") if isinstance(res, dict) else None
-            if oid:
-                pending.append({"date": str(asof.date()), "symbol": sym, "side": side,
-                                "qty": int(q), "expected": float(prices.get(sym, 0) or 0),
-                                "order_id": oid})
+            if not oid:
+                return
+            rec = {"date": str(asof.date()), "symbol": sym, "side": side,
+                   "qty": int(q), "expected": float(prices.get(sym, 0) or 0),
+                   "order_id": oid,
+                   # The submit INSTANT, not just the decision session. Needed to
+                   # measure how long an order rested and to pair the arrival
+                   # quote with the order it belongs to.
+                   "submitted_at": _s.now_et().isoformat(timespec="seconds")}
+            # NBBO at submit. Captured AFTER the POST returns, so it trails the
+            # order by the round trip (~0.2s) and can never delay or fail a
+            # placement. In evening mode the market is shut, so this is the last
+            # regular-hours quote -- `age_s` on the quote says how stale.
+            qs = _quote_at(cfg, sym)
+            if qs:
+                rec["quote_submit"] = qs
+            pending.append(rec)
         for s, q, full in sells:
             if full and not moc:
                 res = alpaca.place_market_sell(s)

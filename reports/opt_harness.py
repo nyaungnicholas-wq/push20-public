@@ -64,6 +64,26 @@ OUTSAMPLE = ("2016-01-01","2024-12-31")
 SYN_DRAG_ANNUAL  = 0.04
 SYN_DRAG_3X      = 0.07
 
+# RELEASE TIMING AND WHAT cost_bps MEANS (2026-09-19, research/v3/EXECUTION.md).
+# cost_bps is one flat constant for every symbol, size, date and INSTANT. The
+# instant matters more than anyone assumed: MEASURED whole-book notional-weighted
+# half-spread is 27.63 bps/side at 09:30:00.000 against 7.23 five minutes later
+# (806 legs, 150 mornings), and the signed drift across that window is
+# indistinguishable from zero at every offset out to an hour.
+#
+# So this constant is not a property of the strategy, it is a property of WHEN
+# the live loop releases. Priced through this engine at each symbol's own
+# measured multiple, releasing at the open rather than after it costs
+# RELEASE_AT_OPEN_PENALTY_BPS more per side. ROTATION_RELEASE_DELAY_MIN in
+# trader/rotation_live.py is the live switch; this is the number it is worth.
+#
+# NOT wired into the default. Changing cost_bps here would silently restate every
+# historical result, and the fill convention stays next_open either way -- the
+# drift finding is what licenses that, since mid(+15m) is an unbiased estimate of
+# mid(09:30). A true open+15m fill price would need 20 years of intraday bars,
+# which do not exist for free.
+RELEASE_AT_OPEN_PENALTY_BPS = 10.41   # MEASURED, per side, whole book
+
 def synthesize_lev(df, underlying, lev_sym, drag=SYN_DRAG_ANNUAL, mult=2.0):
     """Extend a leveraged ETF backwards before its inception using the underlying's
     returns: px[t-1] = px[t] / (1 + mult*r_t - drag/252). Stops where the
@@ -86,11 +106,33 @@ def synthesize_lev(df, underlying, lev_sym, drag=SYN_DRAG_ANNUAL, mult=2.0):
     return n
 
 _DF=None
-# Fill mode: "close" (use close price for execution) or "next_open" (use next day's open).
-# Hold unit: "trading" (count trading days) or "calendar" (count calendar days).
-# Defaults reproduce the original harness behavior.
-FILL_MODE = "close"
+# Fill mode: "close" (execute at the very close the decision was computed from) or
+# "next_open" (execute at the next session's open).
+#
+# DEFAULT IS "next_open" AS OF 2026-09-17 (research/v3/A2a_fill_convention.md).
+# The live loop is the evening/next-open path (register-tasks.ps1:93 ->
+# `rotation-live --scheduled --session next-open`): rotation_live.run_scheduled
+# takes `closed = last_closed_session()`, asserts the price frame is as-of that
+# session (require_asof), and therefore consumes session t's OFFICIAL CLOSING
+# PRINT. A price that exists only once the market has closed cannot also be the
+# price you transact at; the first executable price after it is the t+1 open.
+# "close" is retained for reproducing every pre-2026-09-17 number in reports/
+# (including the spent holdout) and for a same-session MOC design that decides
+# on a pre-close snapshot instead. Override precedence:
+#   cfg["fill_mode"]  >  --fill-mode  >  $PUSH20_FILL_MODE  >  this default.
+FILL_MODE = os.environ.get("PUSH20_FILL_MODE", "next_open")
 HOLD_UNIT = "trading"
+# Momentum window convention (A2b). "live" reproduces trader/rotation.py, which is what
+# the live loop actually computes and therefore what this certifier must grade by default.
+#   "live"      a[p]/a[p-lb+1]-1  -> an lb-BAR window = lb-1 return periods (231 at lb=232)
+#   "canonical" a[p]/a[p-lb]-1    -> lb return periods (232 at lb=232) = the correct reading
+#                                    of "lb-day return", and what the lb=232 grid actually fit
+# Live is the buggy side; see research/v3/A2b_window_skip.md for the proposed live diff.
+MOM_WINDOW = "live"
+# trader/rotation.py drops rotation_skip_days entirely when rotation_signal_ema>1
+# (momentum_scores_ema has no skip parameter). Grading skip>0 under an EMA therefore
+# certifies a signal the live loop cannot produce. Refuse it instead of grading it.
+SKIP_UNDER_EMA = False
 _OPENS = None
 FILL_FALLBACKS = 0
 
@@ -137,11 +179,21 @@ def _ema_mom(a,pos,lb,span,skip=0):
     skip>0 implements skip-month momentum: the most recent `skip` trading days
     are excluded from the measurement window, so a 12-1 signal is lb=252,skip=21.
     skip=0 reproduces the original (contaminated) behaviour exactly.
+
+    MOM_WINDOW selects the window convention; see its definition above.
     """
+    if skip>0 and span>1 and not SKIP_UNDER_EMA:
+        raise ValueError(
+            f"skip={skip} with ema_span={span}: trader/rotation.py ignores "
+            "rotation_skip_days whenever rotation_signal_ema>1, so this signal is not "
+            "executable live. Set opt_harness.SKIP_UNDER_EMA=True to grade it anyway.")
+    off = 1 if MOM_WINDOW=="live" else 0
+    # keep the ORIGINAL warm-up guard under both conventions so a live-vs-canonical
+    # comparison starts on the same bar and measures the formula, not the start date.
     if pos<lb+span+skip: return None
     raw=[]
     for lag in range(span-1,-1,-1):
-        p=pos-lag-skip; base=a[p-lb]
+        p=pos-lag-skip; base=a[p-lb+off]
         if base<=0 or math.isnan(base) or math.isnan(a[p]): continue
         raw.append(a[p]/base-1.0)
     if not raw: return None
@@ -243,7 +295,9 @@ DEFAULTS=dict(lookback=232,ema_span=9,top_n=3,min_hold_days=3,
     regime_sma=200,breaker_sma=0,breaker_level=1.0,defensive="GLD+TLT",
     defensive_momentum=False,use_lev=True,lev_only_topk=0,max_weight=1.0,
     weight_scheme="return_prop",cost_bps=5,
-    use_3x=0,               # 1: deploy 3x ETFs (TECL/TQQQ/SOXL/FAS) when scale>2 (V5 three-tier)
+    warmup_bars=0,          # 0: warm-up = max(lb)+span+skip+5 (start date moves with lb).
+                            # >0: pin it, so a lookback sweep is not also a start-date sweep.
+    use_3x=0,             # 1: deploy 3x ETFs (TECL/TQQQ/SOXL/FAS) when scale>2 (V5 three-tier)
     # ── V7 upgrade knobs (all default OFF → reproduce V6D exactly) ──
     risk_adjust_vol=0,      # >0: divide momentum score by sector vol over this window (risk-adjusted sizing)
     golden_cross=0,         # 1: require SMA50>SMA200 for full bull leverage, else cap at 1.0
@@ -268,6 +322,18 @@ DEFAULTS=dict(lookback=232,ema_span=9,top_n=3,min_hold_days=3,
     dd_brake=None,          # [(depth,cap),...] portfolio-drawdown brake, e.g. [(0.15,1.0),(0.25,0.5)]
     min_score=0.0,          # absolute-momentum gate; 0.0 = the original "> 0" rule
     lookback_weights=None,  # per-lookback weights, e.g. (0.6,0.4); None = equal blend
+    fill_mode=None,         # None = module FILL_MODE; "close" / "next_open" per-run override
+    fill_blend=0.0,         # next_open only: 0.0 = the t+1 open, 1.0 = the t+1 close.
+                            # b in between prices a partial-session participation
+                            # (early-session VWAP proxy) as (1-b)*open + b*close.
+    unlev_live_size=0,      # A2c. 1: a pick with NO 2x listing (XLC) is booked at the
+                            # UNLEVERED weight while the book is levered, as
+                            # trader/rotation.py turbo_allocation Tier 1 does, and the
+                            # difference falls through to the defensive sleeve. 0 keeps
+                            # exposure-preserving sizing (w*scale in cash), which is what
+                            # the volatility overlay means and what the account can fund.
+    alloc_log=None,         # optional list: (date, scale, cap_used_pre_def, cap_used_post,
+                            # [unleverable picks], weights) per acting rebalance.
     defensive_live=0)       # 1: defensive sleeve takes LEFTOVER capital, unlevered, as
                             # trader/rotation.py turbo_allocation does. 0 keeps the old
                             # harness rule where a defensive fill takes a full weighted
@@ -282,6 +348,12 @@ def simulate(df,cfg,start,end):
     use_lev=bool(p["use_lev"]); lev_topk=int(p["lev_only_topk"]); maxw=float(p["max_weight"])
     wscheme=str(p["weight_scheme"]); def_mom=bool(p["defensive_momentum"])
     cost=float(p["cost_bps"])/10000
+    # Optional trade ledger. Pass cfg["trade_log"]=[] to collect
+    # (date, symbol, delta_shares, per_share_price_net_of_cost). Default None =
+    # no list, no appends, no behaviour change: every historical result still
+    # reproduces byte-for-byte. Prices are logged AFTER commission because that
+    # is the tax quantity (cost raises basis on a buy, cuts proceeds on a sell).
+    tlog=p.get("trade_log")
     # V7 knobs
     ra_vol=int(p["risk_adjust_vol"]); golden=int(p["golden_cross"]); reg_buf=float(p["regime_buffer"])
     def_dyn=int(p["defensive_dynamic"]); tiered=int(p["tiered_caps"]); score_gap=float(p["min_score_gap"])
@@ -290,6 +362,7 @@ def simulate(df,cfg,start,end):
     use_bvol=int(p["basket_vol"]); risk_always=int(p["risk_gate_always"])
     skip=int(p["skip_days"]); ewma_hl=int(p["vol_ewma_halflife"])
     brake=p["dd_brake"] or []; min_score=float(p["min_score"]); def_live=int(p["defensive_live"])
+    unlev_live=int(p["unlev_live_size"]); alog=p.get("alloc_log")
     lbw=p["lookback_weights"]
     lbs=tuple(p["lookback"]) if isinstance(p["lookback"],(list,tuple)) else (int(p["lookback"]),)
     dfc=[s for s in p["defensive"].split("+") if s in df.columns]
@@ -310,7 +383,12 @@ def simulate(df,cfg,start,end):
     spy=px.get(SPY_SYM)
     i0=int(np.searchsorted(idx.values,np.datetime64(start)))
     i1=int(np.searchsorted(idx.values,np.datetime64(end),side="right"))-1
-    need=max(lbs)+span+skip+5
+    # Warm-up bars burned after `start` before the book may trade. It defaults to
+    # max(lbs)+span+skip+5, which makes the SIMULATION START DATE a function of the
+    # lookback: sweeping lb=231 vs lb=232 silently shifts the first traded bar by one
+    # session, and that shift alone moves CAGR (measured: 0.25pp — see A2b Part 3b).
+    # warmup_bars>0 pins it so a lookback sweep compares signals, not start dates.
+    need=int(p.get("warmup_bars") or 0) or (max(lbs)+span+skip+5)
 
     cash=100000.0; shares={}; curve=[]; last=-999; wins=loss=0; prev=100000.0
     days_in=days_tot=0; lev_days=0; rebal_days=0
@@ -326,8 +404,12 @@ def simulate(df,cfg,start,end):
             if pr: e+=q*pr
         return e
 
+    fmode=str(p["fill_mode"] or FILL_MODE)
+    if fmode not in ("close","next_open"):
+        raise ValueError(f"fill_mode must be 'close' or 'next_open', got {fmode!r}")
+    blend=float(p["fill_blend"])
     _op=None
-    if FILL_MODE=="next_open":
+    if fmode=="next_open":
         _of=load_opens()
         _op={c:_of[c].values.astype(float) for c in _of.columns}
 
@@ -340,12 +422,22 @@ def simulate(df,cfg,start,end):
         function (the defensive-sleeve selection at ~:326), and shadowing it
         made every rebalance raise "'list' object is not callable"."""
         global FILL_FALLBACKS
-        if FILL_MODE=="next_open" and _op is not None and pos+1<len(idx):
+        if fmode=="next_open" and _op is not None and pos+1<len(idx):
             a=_op.get(s)
             if a is not None:
                 v=a[pos+1]
-                if not math.isnan(v) and v>0: return v
+                if not math.isnan(v) and v>0:
+                    if blend>0:
+                        c1=price(s,pos+1)
+                        if c1: v=(1.0-blend)*v+blend*c1
+                    return v
+            # No open for t+1 (pre-inception 2x sleeves carry synthesized CLOSES
+            # only). Fall back to the t+1 CLOSE, not the t close: a missing open
+            # is a data hole, not a licence to trade at a price the decision
+            # already consumed. Only if t+1 has no price at all do we give up.
             FILL_FALLBACKS+=1
+            nxt=price(s,pos+1)
+            if nxt: return nxt
         return price(s,pos)
 
     for pos in range(i0,i1+1):
@@ -510,7 +602,7 @@ def simulate(df,cfg,start,end):
         if e_now<=0: continue
         # rank picks for lev_only_topk
         pick_rank={s:i for i,(s,_) in enumerate(ranked[:top_n])}
-        tgt={}
+        tgt={}; unlev_hit=[]
         for s,w in weq.items():
             notional=w*scale*e_now
             _leverable = (not def_live) or (s in sec)   # live never levers the defensive sleeve
@@ -525,12 +617,17 @@ def simulate(df,cfg,start,end):
             elif do_lev:
                 tgt[lev[s]]=notional/2.0
             elif price(s,pos):
-                tgt[s]=notional
+                # A2c: no 2x listing for this pick (XLC is the only such sector).
+                unlev_hit.append(s)
+                tgt[s]=(w*e_now if (unlev_live and scale>1.05) else notional)
         inv=sum(tgt.values()); left=e_now-inv
         if left>1 and dfc:
             for dd_ in dfc:
                 if price(dd_,pos): tgt[dd_]=tgt.get(dd_,0)+left/len(dfc)
+        inv0=inv
         inv=sum(tgt.values())
+        if alog is not None:
+            alog.append((ds,float(scale),inv0/e_now,inv/e_now,list(unlev_hit),dict(weq)))
         if inv>e_now*1.001:
             f=e_now/inv; tgt={s:v*f for s,v in tgt.items()}
         tsh={}
@@ -543,12 +640,14 @@ def simulate(df,cfg,start,end):
             pr=fill_px(s,pos)
             if pr is None: tsh[s]=oq; continue
             cash+=(oq-nq)*pr-(oq-nq)*pr*cost
+            if tlog is not None: tlog.append((ds,s,-(oq-nq),pr*(1.0-cost)))
         for s,nq in tsh.items():
             oq=shares.get(s,0.0)
             if nq<=oq+1e-9: continue
             pr=fill_px(s,pos)
             if pr is None: tsh[s]=oq; continue
             cash-=(nq-oq)*pr+(nq-oq)*pr*cost
+            if tlog is not None: tlog.append((ds,s,(nq-oq),pr*(1.0+cost)))
         shares={s:q for s,q in tsh.items() if q>1e-9}
         ea=eq(pos)
         if last>=i0:
@@ -617,7 +716,11 @@ if __name__=="__main__":
     ap.add_argument("--batch",type=str,default="")
     ap.add_argument("--label",type=str,default="cfg")
     ap.add_argument("--diagnose",action="store_true")
+    ap.add_argument("--fill-mode",dest="fill_mode",choices=["close","next_open"],default=None,
+                    help="execution price convention (default: next_open)")
     args=ap.parse_args()
+    if args.fill_mode: FILL_MODE=args.fill_mode
+    print(f"# FILL_MODE={FILL_MODE}",file=sys.stderr)
     df=load_data()
 
     if args.diagnose:

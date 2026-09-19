@@ -46,13 +46,13 @@ class AlpacaBroker:
         try:
             with urlopen(req, timeout=10) as resp:
                 raw = resp.read()
-                return json.loads(raw) if raw else {}   # 204 No Content → {}
+                return json.loads(raw) if raw else {}   # 204 No Content -> {}
         except HTTPError as e:
             err = e.read().decode()
-            print(f"  [Alpaca] {method} {path} → HTTP {e.code}: {err[:120]}")
+            print(f"  [Alpaca] {method} {path} -> HTTP {e.code}: {err[:120]}")
             return None
         except Exception as e:
-            print(f"  [Alpaca] {method} {path} → Error: {e}")
+            print(f"  [Alpaca] {method} {path} -> Error: {e}")
             return None
 
     # -----------------------------------------------------------------------
@@ -82,7 +82,7 @@ class AlpacaBroker:
         if result:
             print(f"  [Alpaca] BUY {shares} {symbol}  "
                   f"SL:${stop_loss:.2f}  TP:${take_profit:.2f}  "
-                  f"→ order {result.get('id','?')[:8]}")
+                  f"-> order {result.get('id','?')[:8]}")
         return result
 
     def place_market_buy(self, symbol: str, shares: int, tif: str = "day") -> Optional[dict]:
@@ -104,13 +104,13 @@ class AlpacaBroker:
         result = self._request("POST", "/orders", order)
         if result:
             kind = "MOC" if tif == "cls" else "market"
-            print(f"  [Alpaca] BUY {int(shares)} {symbol} ({kind}) → order {result.get('id','?')[:8]}")
+            print(f"  [Alpaca] BUY {int(shares)} {symbol} ({kind}) -> order {result.get('id','?')[:8]}")
         return result
 
     def place_market_sell_qty(self, symbol: str, shares: int, tif: str = "day") -> Optional[dict]:
         """Market SELL of a specific quantity (used to trim a position toward
         its new target weight on rebalance, rather than closing it entirely).
-        tif="cls" → Market-On-Close (fills at the closing auction)."""
+        tif="cls" -> Market-On-Close (fills at the closing auction)."""
         if shares <= 0:
             return None
         order = {
@@ -123,7 +123,7 @@ class AlpacaBroker:
         result = self._request("POST", "/orders", order)
         if result:
             kind = "MOC" if tif == "cls" else "market"
-            print(f"  [Alpaca] SELL {int(shares)} {symbol} ({kind}) → order {result.get('id','?')[:8]}")
+            print(f"  [Alpaca] SELL {int(shares)} {symbol} ({kind}) -> order {result.get('id','?')[:8]}")
         return result
 
     def place_market_sell(self, symbol: str) -> Optional[dict]:
@@ -143,7 +143,7 @@ class AlpacaBroker:
         # Alpaca requires either qty or notional — use positions endpoint instead
         result = self._request("DELETE", f"/positions/{symbol}")
         if result:
-            print(f"  [Alpaca] SELL all {symbol}  → closed")
+            print(f"  [Alpaca] SELL all {symbol}  -> closed")
         return result
 
     def cancel_orders_for(self, symbol: str):
@@ -174,6 +174,19 @@ class AlpacaBroker:
         if not order_id:
             return None
         return self._request("GET", f"/orders/{order_id}")
+
+    def provenance(self) -> dict:
+        """Which venue produced a fill. Recorded on every logged fill row.
+
+        Round 1 could only establish that all 105 logged fills were Alpaca
+        simulator fills by reading this file: the log itself did not say, so
+        "measured execution cost" and "simulator output" were indistinguishable
+        in the data. Writing the endpoint and the key prefix onto the row makes
+        provenance a field instead of a code read.
+        """
+        return {"endpoint": _PAPER_BASE,
+                "venue": "paper" if "paper-api." in _PAPER_BASE else "live",
+                "key_prefix": (self.key or "")[:2].upper()}
 
     def get_clock(self) -> Optional[dict]:
         """Market clock: {is_open, next_open, next_close, timestamp}."""

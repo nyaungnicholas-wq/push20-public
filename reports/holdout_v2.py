@@ -5,12 +5,17 @@ review found a defensive-sleeve fidelity bug in it. Same criteria both times,
 both passed. See PREREG_v2_ADDENDUM.md."""
 import os, sys, json, hashlib, statistics as st, warnings
 warnings.filterwarnings("ignore")
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT = r"C:\Users\Nicholas_N\Desktop\claude code\stock-trader"
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ROOT); sys.path.insert(0, os.path.join(ROOT, "reports"))
 
 import opt_harness as H
 H.FETCH_END = "2026-09-02"
+# Pinned 2026-09-17 (A2a): the harness now defaults to next-open fills, which is the
+# executable convention. This holdout was GRADED on 2026-09-13 at decision-close fills;
+# pinning the old convention here keeps a spent, frozen record reproducible. It does not
+# re-open the holdout, and nothing here may be re-graded.
+H.FILL_MODE = "close"
 
 prereg = open(os.path.join(HERE, "PREREG_v2.md"), "rb").read()
 print("PREREG sha256:", hashlib.sha256(prereg).hexdigest()[:16], f"({len(prereg)} bytes)\n")

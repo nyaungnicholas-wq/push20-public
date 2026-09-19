@@ -11,6 +11,7 @@ Usage:
 """
 
 import argparse
+import sys
 import json
 import os
 
@@ -294,13 +295,29 @@ def cmd_rotation_live(args):
     if getattr(args, "selftest", False):
         from trader.rotation_live import selftest
         return selftest()
+    if getattr(args, 'release', False):
+        from trader.rotation_live import run_release
+        return run_release(CONFIG, dry_run=not args.live)
     if args.scheduled:
         from trader.rotation_live import run_scheduled
         run_scheduled(CONFIG, dry_run=not args.live,
                       next_open=(args.session == "next-open"))
     else:
+        # --live WITHOUT --scheduled used to reach the bare primitive, skipping
+        # ten guards and defaulting complete_fills True (which re-sends the whole
+        # book if run twice in an evening). Refused. The dry run still works and
+        # is the useful manual case: it prints the plan and sends nothing.
+        if args.live:
+            print("refusing: `--live` without `--scheduled` bypasses the "
+                  "pre-trade risk gate, min_hold_days, the market-open check, "
+                  "the data-freshness assert and the session idempotency key, "
+                  "and would re-send the entire book if run twice.\n"
+                  "  to rebalance now, gated:  main.py rotation-live --scheduled --live\n"
+                  "  to release a queued plan: main.py rotation-live --release --live\n"
+                  "  to see the plan only:     main.py rotation-live")
+            return 2
         from trader.rotation_live import run_rotation_cycle
-        run_rotation_cycle(CONFIG, dry_run=not args.live, verbose=True)
+        run_rotation_cycle(CONFIG, dry_run=True, verbose=True)
 
 
 def cmd_montecarlo(args):
@@ -406,6 +423,9 @@ Commands:
         help="run the champion live on the Alpaca paper account (dry-run by default)")
     p_rotl.add_argument("--live", action="store_true",
         help="actually submit orders to Alpaca (omit for a dry-run plan)")
+    p_rotl.add_argument("--release", action="store_true",
+                        help="release a plan the evening run deferred "
+                             "(ROTATION_RELEASE_DELAY_MIN > 0)")
     p_rotl.add_argument("--scheduled", action="store_true",
         help="background mode: gate on market-open + once-per-month, exit fast if not due")
     p_rotl.add_argument("--session", choices=["intraday", "next-open"],
@@ -430,7 +450,12 @@ Commands:
         help="4-window overfitting check").set_defaults(func=cmd_walkforward)
 
     args = parser.parse_args()
-    args.func(args)
+    rc = args.func(args)
+    # Honour a non-zero return. cmd_rotation_live refuses an ungated --live and
+    # returns 2; discarding that made the refusal exit 0, so any wrapper script
+    # checking the status code would read a blocked trade as a successful one.
+    if isinstance(rc, int) and rc:
+        sys.exit(rc)
 
 
 if __name__ == "__main__":
