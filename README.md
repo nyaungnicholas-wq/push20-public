@@ -64,6 +64,47 @@ never been fitted to a real fill, which puts roughly a 3× band on it.
 Kept because a repository about measurement discipline that quietly edits its own
 numbers has none.
 
+### 2026-09-19 — the volatility overlay was not targeting volatility
+
+An external forensic audit of the execution and risk layers turned up three
+things the configuration's own comments got wrong. The headline table above is
+unaffected — it was measured on the configuration this repository ships — but
+the reasoning attached to that configuration was not sound.
+
+**The overlay is a two-state switch.** `rotation_vol_target` is 0.50 against a
+median basket volatility of 26.2%, so it asks for 1.91x and is clipped by
+`rotation_vol_cap = 1.25`. Measured across 5,199 sessions (2006-2026) the
+exposure scale sat exactly on its cap **64.0%** of the time, exactly on 1.00
+**20.6%**, and moved freely on only **5.5%**. What actually drives it is two
+binary flags: SPY below its 200-day average (armed 20.4% of sessions) and
+VIX >= 25 (17.0%). The live book has since moved to `vol_target = 0.30`, where
+the volatility term binds on 53.6% of sessions; this repository keeps 0.50
+because that is what the published numbers were measured on.
+
+**`rotation_position_cap` is inert.** At `top_n = 3` with equal weighting each
+position is 0.333, below the 0.60 cap, and the renormalisation after the capping
+loop cancels it regardless. The documented "0.50 → 0.60 genuine Pareto move" was
+therefore measuring something else. The same applies to the `vol_window 12 → 8`
+leg of that claim: reverting it moves the full-window result by −0.11pp of CAGR
+and −0.08pp of drawdown, which is noise. Both legs are retracted.
+
+**2022 was attributed to the wrong mechanism.** The configuration recorded
+"Cost: 2022 grind year ~−6%" against the GATED v2 risk gates. Measured: the
+residual GLD+TLT sleeve averaged **36.8%** of capital that year, half of it TLT,
+and TLT returned **−29.4%**. That is −5.3pp — essentially the entire figure. The
+risk gates did not cause it, and the revert path documented alongside it would
+not have fixed it. Three separate attempts to improve that sleeve (replace its
+contents, swap TLT to bills dynamically, route more capital to it under stress)
+were graded and all three lost.
+
+**A reproducibility note.** `reports/opt_harness.py` sets `FETCH_END` to
+`today()`, so the `full_06_now` window grows every day and the table above
+cannot be reproduced exactly after its measurement date. Re-running the default
+config on 2026-09-19 gives 17.19% / −31.19% against the published 17.29% /
+−30.70% measured to 2026-09-02 — seventeen extra sessions, not a discrepancy.
+Pin an end date before comparing anything here to anything else.
+
+
 **The fill convention (2026-09-19).** `reports/opt_harness.py` set
 `FILL_MODE = "close"`: the certifying engine, including the sealed holdout,
 transacted at the closing print its decision was computed from. The live loop

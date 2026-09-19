@@ -186,20 +186,30 @@ DAILY_CHAMPION_FLAGS: Dict = {
     "rotation_weight_squared"  : False,
     "rotation_two_way_vol"     : True,
     "rotation_use_3x"          : False,
-    "rotation_position_cap"    : 0.60,   # RISK-DIAL v3 (2026-07-24): 0.50 -> 0.60, see below
-    "rotation_vol_target"      : 0.50,   # GATED v2 (2026-06-23): basket-vol + 1.5 cap bind this to ~1.5x on calm days
+    "rotation_position_cap"    : 0.60,   # INERT at top_n=3 equal weight: 1/3 < 0.60 and the
+                                         # renormalisation after _cap_weights cancels it. The
+                                         # "0.50 -> 0.60 Pareto move" below measured something else.
+    "rotation_vol_target"      : 0.50,   # NOT a volatility target at this value -- see AUDIT below.
+                                         # The live book has since moved to 0.30; this repo keeps
+                                         # 0.50 because the published headline was measured on it.
     "rotation_vol_window"      : 8,      # RISK-DIAL v3 (2026-07-24): 12 -> 8, see below
     "rotation_vol_cap"         : 1.25,   # HOLDOUT v2 (2026-09-13): 1.5 -> 1.25, see below
     "rotation_vol_cap_bear"    : 1.0,    # safety valve: de-lever to 1x when SPY < 200-SMA
     "rotation_vol_cap_sma"     : 200,    # SPY 200-SMA determines bull/bear
-    "rotation_vol_floor"       : 0.50,
+    "rotation_vol_floor"       : 0.50,   # binds only when basket rv > 1.00 at this vol_target:
+                                         # MEASURED 0.4% of 5,199 sessions. Effectively inert.
     "rotation_defensive_symbol": "GLD+TLT",
     "rotation_signal_ema"      : 9,      # EMA span for momentum smoothing
     "rotation_min_hold_days"   : 3,      # minimum days before rebalancing again
     # ── GATED v2 (2026-06-23): risk gates that earn the right to higher leverage. ──
     # Backtest 2006-2026: 19.8% CAGR / -35.5% MDD / Calmar 0.56  (old PUSH-20: 19.1% / -36.6% / 0.52)
     # Dominates old config on BOTH return and drawdown; OOS-robust in 3/4 sub-periods.
-    # Cost: 2022 grind year ~-6%. Reverting = set these False + vol_target 0.22 + vol_window 25.
+    # "Cost: 2022 grind year ~-6%" WAS ATTRIBUTED HERE AND THAT IS WRONG
+    # (audit 2026-09-19). Measured 2022: the residual GLD+TLT sleeve averaged
+    # 36.8% of capital, half of it TLT, and TLT returned -29.4%.
+    # 0.184*(-0.294) + 0.184*(+0.008) = -5.3pp -- essentially the whole "-6%".
+    # The risk gates did not cause it and the revert below does not touch it.
+    # Reverting = set these False + vol_target 0.22 + vol_window 25.
     "rotation_basket_vol"      : True,   # size leverage to the HELD picks' own vol, not SPY's
     "rotation_vix_gate"        : True,   # forward tail-risk gate (de-lever when VIX elevated)
     "rotation_vix_symbol"      : "^VIX",
@@ -207,10 +217,24 @@ DAILY_CHAMPION_FLAGS: Dict = {
     "rotation_vix_lo_cap"      : 1.0,    # VIX >= 25 → cap exposure at 1x
     "rotation_vix_hi"          : 35.0,
     "rotation_vix_hi_cap"      : 1.0,    # HOLDOUT v2 (2026-09-13): tier retired, see below
-    # ── RISK-DIAL v3 (2026-07-24): the only two changes that improve BOTH axes. ──
+    # ── AUDIT (2026-09-19): this overlay is not targeting volatility. ──────────
+    # Against a median basket vol of 26.2%, vol_target 0.50 asks for 1.91x and is
+    # clipped by vol_cap 1.25. MEASURED over 5,199 sessions the scale sat on the
+    # cap 64.0% of the time, on 1.00 exactly 20.6%, and moved freely on only 5.5%
+    # -- a two-state switch driven by the bear cap and the VIX gate. At 0.30 the
+    # vol term binds on 53.6% of sessions and the full-window result is
+    # 19.58% / -29.2% / Calmar 0.670 against 19.59% / -33.2% / 0.589 (harness
+    # defaults, in-sample -- the sealed holdout was spent 2026-09-13).
+    #
+    # ── RISK-DIAL v3 (2026-07-24) -- vol_window claim RETRACTED, see below. ────
     # Swept 1260 configs (reports/risk_dial_sweep.py) then re-tested the finalists over
-    # three disjoint sub-periods (reports/risk_dial_finalists.py). vol_window 12->8 and
-    # position_cap 0.50->0.60 are a genuine Pareto move:
+    # three disjoint sub-periods (reports/risk_dial_finalists.py). BOTH LEGS OF THIS
+    # CLAIM FAILED RE-MEASUREMENT (2026-09-19). position_cap is inert (see above).
+    # vol_window only enters on the 5.5% of sessions where the vol term binds, and
+    # reverting 8 -> 12 moves the result by -0.11pp CAGR / -0.08pp MDD -- noise in
+    # both directions. The sweep found a selection artefact across 1,260 configs,
+    # not a mechanism. Neither value is wrong; the "Pareto move" framing is.
+    # The numbers below are left as the historical record of what was claimed:
     #   before  21.32% CAGR / -32.53% MDD / Calmar 0.655 / Sharpe 0.88
     #   after   21.78% CAGR / -31.52% MDD / Calmar 0.691 / Sharpe 0.89
     # More return AND less drawdown, with no sub-period sacrificed (worst era -0.05pp).
