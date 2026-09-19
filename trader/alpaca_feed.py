@@ -9,6 +9,8 @@ Replaces yfinance for live price checks (yfinance can't stream live).
 from __future__ import annotations
 
 import json
+import time
+from urllib.error import HTTPError
 import os
 from typing import Dict, List, Optional
 from urllib.request import Request, urlopen
@@ -36,6 +38,9 @@ def _feed() -> str:
 
 class AlpacaFeed:
     def __init__(self, api_key: Optional[str] = None, api_secret: Optional[str] = None):
+        # Why a request produced nothing, so a run can report what it did not see.
+        self.errors: dict = {}
+        self.last_error = None
         self.key    = api_key    or os.getenv("ALPACA_KEY", "")
         self.secret = api_secret or os.getenv("ALPACA_SECRET", "")
 
@@ -47,12 +52,40 @@ class AlpacaFeed:
         }
 
     def _get(self, url: str, timeout: int = 10) -> Optional[dict]:
-        try:
-            req = Request(url, headers=self._headers())
-            with urlopen(req, timeout=timeout) as resp:
-                return json.loads(resp.read())
-        except Exception:
-            return None
+        """GET, returning None when there is genuinely nothing to return.
+
+        A bare `except Exception: return None` made a RATE LIMIT (HTTP 429)
+        indistinguishable from "no quote exists". That is not a nuisance here --
+        this call feeds the execution measurement, so a throttled request became
+        a missing data point in the cost number the strategy is graded on, with
+        nothing in the log to say so.
+
+        429 is retried with backoff, because the data does exist and the server
+        is only asking us to wait. Anything still failing after that is counted
+        and logged, so a run can say how much it did not see.
+        """
+        for attempt in range(3):
+            try:
+                req = Request(url, headers=self._headers())
+                with urlopen(req, timeout=timeout) as resp:
+                    return json.loads(resp.read())
+            except HTTPError as e:
+                if e.code == 429 and attempt < 2:
+                    time.sleep(0.5 * (2 ** attempt))
+                    continue
+                self.errors[e.code] = self.errors.get(e.code, 0) + 1
+                if e.code == 429:
+                    self.errors["rate_limited"] = self.errors.get("rate_limited", 0) + 1
+                    print(f"  quote feed: RATE LIMITED after {attempt + 1} attempts "
+                          f"-- this is a MISSING measurement, not an absent quote")
+                elif e.code not in (404,):      # 404 really is "no such thing"
+                    print(f"  quote feed: HTTP {e.code} on {url.split('?')[0]}")
+                return None
+            except Exception as e:
+                self.errors["other"] = self.errors.get("other", 0) + 1
+                self.last_error = repr(e)[:120]
+                return None
+        return None
 
     def get_latest_prices(self, symbols: List[str]) -> Dict[str, float]:
         """Return {symbol: latest_price} for a list of symbols.

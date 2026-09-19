@@ -42,6 +42,8 @@ from __future__ import annotations
 
 from typing import Dict, List, Optional, Tuple
 
+import weakref
+
 import numpy as np
 import pandas as pd
 
@@ -351,17 +353,37 @@ def _defensive_list(cfg: Config) -> List[str]:
 
 
 # Per-frame numpy cache for the hot path (momentum / SMA / realized-vol lookups).
-# Keyed by id(close); each entry holds the positional date map and, per symbol,
-# the raw value array plus its first-valid position (frames are ffill'd, so the
-# only NaNs are a leading block before the symbol started trading).
+# Each entry holds the positional date map and, per symbol, the raw value array
+# plus its first-valid position (frames are ffill'd, so the only NaNs are a
+# leading block before the symbol started trading).
+#
+# Keyed by id(close), which CPython reuses after the object is collected. The
+# old guard was `nrows == len(close.index)`, so a freed frame and a new frame of
+# the same length landing on the same address served the FIRST frame's prices
+# for the second one -- silently, with no error, on the momentum hot path. A
+# weakref makes the identity check exact: if the entry's frame is gone, the id
+# belongs to somebody else and the entry is dropped.
 _ARR_CACHE: Dict[int, dict] = {}
+_ARR_CACHE_SWEEP_AT = 16   # entries before a miss bothers to sweep dead refs
 
 
 def _arrays(close: pd.DataFrame) -> dict:
     key = id(close)
     cached = _ARR_CACHE.get(key)
-    if cached is not None and cached["nrows"] == len(close.index):
-        return cached
+    if cached is not None:
+        ref = cached.get("ref")
+        if ref is not None and ref() is close and cached["nrows"] == len(close.index):
+            return cached
+        # Either the address was recycled or the frame grew.
+        _ARR_CACHE.pop(key, None)
+    # Any miss is a chance to drop entries whose frame is gone. Bounded: only
+    # sweep once the cache is big enough for it to matter, so the hot path stays
+    # O(1) in the common case. Without this the cache grows for the life of the
+    # process, one entry per frame ever seen.
+    if len(_ARR_CACHE) >= _ARR_CACHE_SWEEP_AT:
+        for k in [k for k, v in _ARR_CACHE.items()
+                  if v.get("ref") is not None and v["ref"]() is None]:
+            _ARR_CACHE.pop(k, None)
     pos_map = {ts: i for i, ts in enumerate(close.index)}
     cols = {}
     for s in close.columns:
@@ -369,7 +391,11 @@ def _arrays(close: pd.DataFrame) -> dict:
         valid = np.where(~np.isnan(arr))[0]
         first = int(valid[0]) if len(valid) else len(arr)
         cols[s] = (arr, first)
-    cached = {"pos_map": pos_map, "cols": cols, "nrows": len(close.index)}
+    try:
+        ref = weakref.ref(close)
+    except TypeError:          # not weak-referenceable: cache nothing, stay correct
+        return {"pos_map": pos_map, "cols": cols, "nrows": len(close.index), "ref": None}
+    cached = {"pos_map": pos_map, "cols": cols, "nrows": len(close.index), "ref": ref}
     _ARR_CACHE[key] = cached
     return cached
 
