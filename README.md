@@ -97,12 +97,31 @@ not have fixed it. Three separate attempts to improve that sleeve (replace its
 contents, swap TLT to bills dynamically, route more capital to it under stress)
 were graded and all three lost.
 
-**A reproducibility note.** `reports/opt_harness.py` sets `FETCH_END` to
-`today()`, so the `full_06_now` window grows every day and the table above
-cannot be reproduced exactly after its measurement date. Re-running the default
-config on 2026-09-19 gives 17.19% / −31.19% against the published 17.29% /
-−30.70% measured to 2026-09-02 — seventeen extra sessions, not a discrepancy.
-Pin an end date before comparing anything here to anything else.
+**A reproducibility note — corrected 2026-09-20.** The first version of this
+note was wrong, and wrong in the direction that made the table look shakier than
+it is. It said re-running "the default config" gives 17.19% / −31.19% against the
+published 17.29% / −30.70%, and blamed the gap on seventeen extra sessions.
+
+The defaults are not the config that produced the table. `reports/opt_harness.py`
+ships `DEFAULTS` that differ from the live strategy in **ten** settings —
+including `cost_bps` 5 against 9.5, `vol_target` 0.15 against 0.30,
+`vol_cap_bull` 2.0 against 1.25, `weight_scheme` `return_prop` against `equal`,
+and no VIX gate, no basket-vol sizing and no defensive-sleeve residual. Comparing
+the headline against a defaults run compares two different books and the
+similarity of the two numbers is a coincidence.
+
+The table was produced from `reports/live_checkup.py:live_sim_config()`, which
+enumerates the live flags (`docs/research/A2a_fill_convention.md` builds its
+config that way). Rebuilt from that function today, the same book prints
+**17.46% CAGR and −30.70% max drawdown**: the drawdown matches the published
+figure exactly, and the CAGR differs only because `FETCH_END` is `today()`, so
+the window has grown since the measurement date of 2026-09-02.
+
+The genuine caveats are unchanged: the window grows daily, so pin an end date
+before comparing anything here to anything else, and build any comparison config
+from `live_sim_config()` rather than typing one — a hand-typed config that omits
+a flag inherits a harness default silently, which is exactly the mistake this
+note itself made.
 
 
 **The fill convention (2026-09-19).** `reports/opt_harness.py` set
