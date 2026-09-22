@@ -48,10 +48,19 @@ never been fitted to a real fill, which puts roughly a 3× band on it.
 
 **Read these before any table above means anything:**
 
-- This system **has never placed a live order.** `trader/alpaca_broker.py` in the
-  private repo hardcodes Alpaca's paper endpoint as the only URL it has. Every
-  fill ever logged is simulator output, so the cost assumption has never met a
-  real spread.
+- This system **has never placed a live order.** Every fill ever logged is paper
+  output, so the cost assumption has never met a real spread. As of 2026-09-21
+  there are 110 rows in the slippage log, of which 5 record a venue and all 5 say
+  `paper`; none is live.
+
+  An earlier version of this line said the private repo hardcodes the paper
+  endpoint as the only URL it has. That stopped being true when a live-venue gate
+  was added: `trader/alpaca_broker.py` now carries both endpoints and reaches the
+  live one only when `ALPACA_LIVE_TRADING_CONFIRMED` is exactly `TRUE`. That
+  variable is unset at both persisted scopes and in `.env`, and `_base_url()`
+  resolves to the paper endpoint. So the claim about the ACCOUNT still holds, and
+  the claim about the CODE no longer did -- it described something stronger than
+  the truth, in the direction that matters.
 - Monte Carlo puts **P(max drawdown worse than −40%) at about 62%**, not the
   32% a weaker estimator reported. Size to the distribution.
 - The strategy is **below a prior high 89.5% of days.** The annual figure is
